@@ -30,8 +30,7 @@ export default function Home() {
   const loadGenres = async () => {
     try {
       const result = await axios.get("http://localhost:8080/genres");
-      console.log("Genres data received:", result.data);
-      if (result.data && Array.isArray(result.data.genres)) {
+      if (result.data && result.data.genres) {
         setGenres(result.data.genres);
       } else {
         console.error("Unexpected data structure for genres");
