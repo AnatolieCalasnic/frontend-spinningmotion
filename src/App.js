@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Product from './pages/Product';
+import Basket from './pages/Basket';
 import SingleProduct from './pages/SingleProduct';
 
 
@@ -29,6 +30,7 @@ function App() {
             <Route path="/profile" element={<Profile user={user} setUser={setUser} />} />
             <Route path="/genre/:genre" element={<Product />} />
             <Route path="/product/:id" element={<SingleProduct />} />
+            <Route path="/basket" element={<Basket />} />
           </Routes>
         </main>
         <Footer />
