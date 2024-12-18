@@ -136,7 +136,7 @@ const ProductPage = () => {
 
       {/* Edition Records Campaign Section */}
       <div className="mb-12 border-4 border-black p-4">
-        <h2 className="text-2xl font-bold mb-4 bg-blue-600 text-white p-2">Edition Records Campaign</h2>
+        <h2 className="text-2xl font-bold mb-4 bg-blue-600 text-white p-2">All records</h2>
         <div className="grid grid-cols-5 gap-4">
           {products.slice(5, 10).map((record, index) => (
             <Link 
@@ -152,7 +152,7 @@ const ProductPage = () => {
             </p>
           </Link>
           ))}
-          <Link to="/campaign" className="flex items-center justify-center border-2 border-black hover:bg-gray-100 transition-colors">
+          <Link to={`/products?genre=${genre}`}  className="flex items-center justify-center border-2 border-black hover:bg-gray-100 transition-colors">
             <button className="bg-black text-white p-4 w-full h-full">
               <ArrowRight size={24} />
             </button>

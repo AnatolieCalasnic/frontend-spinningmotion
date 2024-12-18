@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate  } from 'react-router-dom';
 import { Plus, Minus, ShoppingCart, CreditCard, Info, Play, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
+import EmbbedCheckoutButton from '../components/EmbbedCheckoutButton';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -90,11 +91,19 @@ const addToBasket = async () => {
     alert(err.message || 'Failed to add item to basket');
   }
 };
-
-  const handleQuickBuy = async () => {
-    await addToBasket();
-    navigate('/basket'); // Redirect to basket page
-  };
+const getQuickBuyItem = () => {
+  if (!product) return null;
+  
+  return [{
+    recordId: parseInt(product.id),
+    title: product.title,
+    artist: product.artist,
+    price: parseFloat(product.price),
+    quantity: quantity,
+    availableStock: product.quantity,
+    condition: product.condition
+  }];
+};
   const images = [
     { color: 'bg-blue-600' },
     { color: 'bg-red-600' },
@@ -167,7 +176,7 @@ const addToBasket = async () => {
                     <div className="p-4 border-r-2 border-b-2 border-black bg-yellow-600">
                         <span className="font-bold">Format:</span> Vinyl
                     </div>
-                    <div className="p-4 border-b-2 border-b-2 border-black bg-yellow-600">
+                    <div className="p-4 border-b-2 border-black bg-yellow-600">
                         <span className="font-bold">Release Year:</span> {product.releaseYear}
                     </div>
                     <div className="p-4 border-r-2 border-b-2 border-black bg-brown-400">
@@ -236,13 +245,14 @@ const addToBasket = async () => {
 
           {/* Action Buttons */}
           <div className="space-y-4">
-            <button 
+            <EmbbedCheckoutButton 
               className="w-full bg-black text-white p-6 flex items-center justify-center font-bold hover:bg-gray-900 transition-colors text-lg"
-              onClick={handleQuickBuy}
-            >
+              items={getQuickBuyItem()}
+              disabled={product.quantity < 1}
+              quickBuy={true}            >
               <CreditCard className="mr-2" size={24} />
               Quick Buy
-            </button>
+            </EmbbedCheckoutButton>
             <button 
               className="w-full border-4 border-black p-6 flex items-center justify-center font-bold hover:bg-gray-100 transition-colors text-lg"
               onClick={addToBasket}

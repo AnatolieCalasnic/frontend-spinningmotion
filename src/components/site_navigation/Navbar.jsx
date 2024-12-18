@@ -2,35 +2,29 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, ShoppingBag, User, X, Menu } from 'lucide-react';
 import Modal from './Modal';
-import AuthForm from './AuthForm';
+import AuthForm from '../AuthForm';
+import { useAuth } from '../../context/AuthContext';
+import SearchBar from './SearchBar';
 
-export default function Navbar({ user, setUser }) {
+
+export default function Navbar() {
+    const { user, logout } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    const searchInputRef = useRef(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (isSearchOpen && searchInputRef.current) {
-            searchInputRef.current.focus();
+    const handleLogout = async () => {
+        try {
+            await logout();
+            setIsDropdownOpen(false);
+            navigate('/');
+        } catch (error) {
+            console.error('Logout error:', error);
         }
-    }, [isSearchOpen]);
-
-    const handleSearchSubmit = (e) => {
-        e.preventDefault();
-        console.log("Search submitted:", searchInputRef.current.value);
-        // search submit logic will be here
     };
-
-    const handleLogout = () => {
-        setUser(null);
-        localStorage.removeItem('user');
-        navigate('/');
-    };
-
     const toggleDropdown = () => {
         setIsDropdownOpen(!isDropdownOpen);
     };
@@ -44,20 +38,11 @@ export default function Navbar({ user, setUser }) {
                     </Link>
                     
                     <div className="flex-grow flex items-center justify-end space-x-6">
-                        <form 
-                            onSubmit={handleSearchSubmit} 
-                            className={`flex items-center transition-all duration-300 ${isSearchOpen ? 'flex-grow' : 'w-0 overflow-hidden'}`}
-                        >
-                            <input
-                                ref={searchInputRef}
-                                type="text"
-                                placeholder="Search our store"
-                                className={`bg-transparent text-white px-4 py-2 w-full focus:outline-none placeholder-gray-400 ${isSearchOpen ? 'opacity-100' : 'opacity-0'}`}
-                            />
-                            <button type="submit" className="text-white px-4 py-2 focus:outline-none">
-                                <Search size={20} />
-                            </button>
-                        </form>
+                    {isSearchOpen && (
+                            <div className="flex-grow flex items-center">
+                                <SearchBar onClose={() => setIsSearchOpen(false)} />
+                            </div>
+                        )}
                         
                         <button 
                             className="text-white hover:text-yellow-400 focus:outline-none"
@@ -132,7 +117,7 @@ export default function Navbar({ user, setUser }) {
             </nav>
             
             <Modal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)}>
-                <AuthForm setUser={setUser} onClose={() => setIsAuthModalOpen(false)} />
+            <AuthForm onClose={() => setIsAuthModalOpen(false)} />
             </Modal>
         </>
     );
