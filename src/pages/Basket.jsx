@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2, Plus, Minus, RefreshCw, CreditCard, X, ShoppingBag } from 'lucide-react';
+import EmbbedCheckoutButton from '../components/EmbbedCheckoutButton'; 
 
 const BasketPage = () => {
   const [basket, setBasket] = useState({ items: [], totalAmount: 0 });
@@ -205,14 +206,10 @@ const BasketPage = () => {
               </div>
 
               <div className="space-y-4">
-                <button
-                  onClick={() => {/* Implement checkout logic */}}
-                  className="w-full bg-yellow-400 text-black py-4 font-bold hover:bg-yellow-500 transition-colors flex items-center justify-center"
+                <EmbbedCheckoutButton
+                  items={basket.items}
                   disabled={basket.items.length === 0}
-                >
-                  <CreditCard className="mr-2" />
-                  Checkout
-                </button>
+                />
                 <Link
                   to="/products"
                   className="w-full bg-blue-600 text-white text-center py-4 font-bold hover:bg-blue-700 transition-colors inline-block"

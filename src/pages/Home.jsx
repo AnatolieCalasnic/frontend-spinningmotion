@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Play, Pause, Loader, Facebook, Instagram, Twitter } from 'lucide-react';
+import { useAuthRedirect } from '../hooks/useAuthRedirect';
+
 
 export default function Home() {
+  useAuthRedirect();
   const [isPlaying, setIsPlaying] = useState(false);
   const [featuredAlbums, setFeaturedAlbums] = useState([]);
   const [genres, setGenres] = useState([]);

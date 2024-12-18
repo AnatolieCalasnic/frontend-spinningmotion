@@ -13,6 +13,51 @@
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
+  print {
+    /* Hide non-essential elements when printing */
+    .print\:hidden {
+      display: none !important;
+    }
+  
+    /* Ensure white background and black text */
+    body {
+      background: white !important;
+      color: black !important;
+    }
+  
+    /* Ensure tables print properly */
+    table {
+      break-inside: auto !important;
+    }
+  
+    tr {
+      break-inside: avoid !important;
+      break-after: auto !important;
+    }
+  
+    /* Ensure proper page margins */
+    @page {
+      margin: 2cm;
+    }
+  
+    /* Custom styles for the orders table when printing */
+    .orders-table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+    }
+  
+    .orders-table th,
+    .orders-table td {
+      border: 1px solid #ddd !important;
+      padding: 8px !important;
+      text-align: left !important;
+    }
+  
+    .orders-table th {
+      background-color: #f2f2f2 !important;
+      font-weight: bold !important;
+    }
+  }
 }
 
 .App-header {

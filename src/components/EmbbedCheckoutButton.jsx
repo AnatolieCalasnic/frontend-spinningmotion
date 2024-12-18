@@ -1,51 +1,149 @@
-import { useRouter } from "next/navigation";
-import { CreditCard } from "lucide-react";
+import React, { useRef, useState, useCallback } from 'react';
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  EmbeddedCheckoutProvider,
+  EmbeddedCheckout
+} from "@stripe/react-stripe-js";
+import { CreditCard, X } from "lucide-react";
+import { useAuth } from '../context/AuthContext';
 
-const EmbbedCheckoutButton = ({ items, disabled = false }) => {
-  const router = useRouter();
+const EmbbedCheckoutButton = ({ items, disabled = false, quickBuy = false }) => {
+  const { user } = useAuth();
+  const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const modalRef = useRef(null);
 
-  const handleCheckout = async () => {
+  const fetchClientSecret = useCallback(async () => {
     try {
-      const response = await fetch("/api/checkout", {
+      setLoading(true);
+      const response = await fetch("http://localhost:8080/api/payment/create-checkout-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Origin": window.location.origin
         },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ 
+          items: items.map(item => ({
+            recordId: item.recordId,
+            title: item.title,
+            artist: item.artist,
+            condition: item.condition,
+            price: item.price,
+            quantity: item.quantity
+          })),
+          metadata: {
+            userId: user?.id || '', // Send user ID if logged in
+            isGuest: !user, // true if no user is logged in
+            quickBuy: quickBuy
+          }
+        }),
       });
 
-      const { sessionId, error } = await response.json();
 
-      if (error) {
-        console.error("Error creating checkout session:", error);
-        alert("Failed to create checkout session");
-        return;
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      const stripe = await stripePromise;
-      const { error: stripeError } = await stripe.redirectToCheckout({
-        sessionId,
-      });
-
-      if (stripeError) {
-        console.error("Stripe error:", stripeError);
-        alert("Failed to redirect to checkout");
-      }
+      const data = await response.json();
+      return data.clientSecret;
     } catch (error) {
-      console.error("Error:", error);
-      alert("Something went wrong");
+      console.error("Error fetching client secret:", error);
+      alert("Unable to start checkout process. Please try again later.");
+      throw error;
+    } finally {
+      setLoading(false);
     }
+  }, [items, user, quickBuy]);
+
+  const handleCheckoutClick = () => {
+    if (!items.length) {
+      alert("Your basket is empty");
+      return;
+    }
+    setShowCheckout(true);
+    modalRef.current?.showModal();
+  };
+
+  const handleCloseModal = () => {
+    setShowCheckout(false);
+    modalRef.current?.close();
   };
 
   return (
-    <button
-      onClick={handleCheckout}
-      disabled={disabled}
-      className="w-full bg-yellow-400 text-black py-4 font-bold hover:bg-yellow-500 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      <CreditCard className="mr-2" />
-      Checkout
-    </button>
+    <>
+      <button
+        onClick={handleCheckoutClick}
+        disabled={disabled || loading}
+        className="w-full bg-yellow-400 text-black py-4 font-bold hover:bg-yellow-500 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <CreditCard className="mr-2" />
+        {loading ? "Processing..." : "Checkout"}
+      </button>
+
+      <dialog 
+        ref={modalRef} 
+        className="modal modal-bottom sm:modal-middle transition-all duration-300 ease-in-out"
+        onClick={(e) => {
+          if (e.target === modalRef.current) handleCloseModal();
+        }}
+      >
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" aria-hidden="true" />
+        <div className="modal-box w-full max-w-6xl bg-white border-8 border-black p-0 shadow-2xl transform transition-all duration-300">
+          {/* Header - De Stijl inspired */}
+          <div className="bg-red-600 p-6 flex justify-between items-center border-b-8 border-black">
+            <h3 className="font-bold text-2xl text-white">Complete Your Purchase</h3>
+            <button 
+              onClick={handleCloseModal}
+              className="bg-black text-white p-2 hover:bg-gray-800 transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
+            {/* Order Summary - Left side */}
+            <div className="border-8 border-black p-6 bg-white">
+              <h4 className="font-bold text-xl mb-4 bg-yellow-400 p-3 border-4 border-black inline-block">
+                Order Summary
+              </h4>
+              <div className="space-y-4">
+                {items.map((item, index) => (
+                  <div key={index} className="flex justify-between items-center border-b-2 border-black pb-2">
+                    <span className="font-bold">{item.title} × {item.quantity}</span>
+                    <span className="bg-blue-600 text-white px-3 py-1">
+                      €{(item.price * item.quantity).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+                <div className="border-t-4 border-black pt-4 mt-4">
+                  <div className="flex justify-between items-center font-bold text-xl">
+                    <span>Total</span>
+                    <span className="bg-yellow-400 px-4 py-2 border-4 border-black">
+                      €{items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stripe Checkout - Right side */}
+            <div className="border-8 border-black bg-white">
+              {showCheckout && (
+                <EmbeddedCheckoutProvider 
+                  stripe={stripePromise} 
+                  options={{ fetchClientSecret }}
+                >
+                  <EmbeddedCheckout className="h-full" />
+                </EmbeddedCheckoutProvider>
+              )}
+            </div>
+          </div>
+        </div>
+      </dialog>
+    </>
   );
 };
 
