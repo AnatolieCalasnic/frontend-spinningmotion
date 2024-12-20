@@ -19,7 +19,7 @@ const RecentOrdersTable = ({ orders }) => {
           {orders?.map((order) => (
             <tr key={order.id} className="border-b-4 border-black hover:bg-gray-50">
               <td className="p-3">{order.id}</td>
-              <td className="p-3">{order.userId}</td>
+              <td className="p-3">{order.userId ? order.userId : "Guest User"}</td>
               <td className="p-3">{order.recordId}</td>
               <td className="p-3">€{order.totalAmount?.toFixed(2)}</td>
               <td className="p-3">

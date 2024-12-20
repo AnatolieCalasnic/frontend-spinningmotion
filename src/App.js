@@ -20,7 +20,9 @@ import AdminOrderDetailsPage from './pages/AdminOrderDetailsPage';
 import AdminOrdersPage from './pages/AdminOrdersPage';  
 import SidebarAdmin from './components/admin/SidebarAdmin';
 import AdminLayout from './components/admin/AdminLayout';  
-
+import { ToastContainer } from 'react-toastify';
+import WebSocketNotifications from './components/websocket/WebSocketNotifications';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const PublicLayout = ({ children }) => {
@@ -45,6 +47,19 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+        <WebSocketNotifications />
         <Routes>
          {/* Admin Routes */}
          <Route

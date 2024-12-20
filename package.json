@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@radix-ui/react-progress": "^1.1.0",
+    "@stomp/stompjs": "^7.0.0",
     "@stripe/react-stripe-js": "^2.8.1",
     "@stripe/stripe-js": "^4.9.0",
     "@testing-library/jest-dom": "^5.17.0",
@@ -25,7 +26,9 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
+    "react-toastify": "^11.0.2",
     "recharts": "^2.13.3",
+    "sockjs-client": "^1.6.1",
     "stripe": "^17.4.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",

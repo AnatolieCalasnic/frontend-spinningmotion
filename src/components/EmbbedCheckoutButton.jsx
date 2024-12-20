@@ -6,14 +6,29 @@ import {
 } from "@stripe/react-stripe-js";
 import { CreditCard, X } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
+import GuestCheckoutForm from './GuestCheckoutForm'; 
 
 const EmbbedCheckoutButton = ({ items, disabled = false, quickBuy = false }) => {
   const { user } = useAuth();
   const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [guestDetails, setGuestDetails] = useState(null);
+  const [showGuestForm, setShowGuestForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const modalRef = useRef(null);
 
+  const handleGuestSubmit = (formData) => {
+    setGuestDetails(formData);
+    setShowGuestForm(false);
+    initiateCheckout();
+  };
+  const initiateCheckout = () => {
+    if (!items.length) {
+      alert("Your basket is empty");
+      return;
+    }
+    setShowCheckout(true);
+  };
   const fetchClientSecret = useCallback(async () => {
     try {
       setLoading(true);
@@ -35,8 +50,18 @@ const EmbbedCheckoutButton = ({ items, disabled = false, quickBuy = false }) => 
           metadata: {
             userId: user?.id || '', // Send user ID if logged in
             isGuest: !user, // true if no user is logged in
-            quickBuy: quickBuy
-          }
+          },
+            guestDetails: !user ? {
+              fname: guestDetails.fname,
+              lname: guestDetails.lname,
+              email: guestDetails.email,
+              address: guestDetails.address,
+              postalCode: guestDetails.postalCode,
+              country: guestDetails.country,
+              city: guestDetails.city,
+              region: guestDetails.region,
+              phonenum: guestDetails.phonenum
+          } : null
         }),
       });
 
@@ -56,19 +81,25 @@ const EmbbedCheckoutButton = ({ items, disabled = false, quickBuy = false }) => 
     } finally {
       setLoading(false);
     }
-  }, [items, user, quickBuy]);
+  }, [items, user, guestDetails, quickBuy]);
 
   const handleCheckoutClick = () => {
     if (!items.length) {
       alert("Your basket is empty");
       return;
     }
-    setShowCheckout(true);
+    // Modified to show guest form first for non-logged-in users
+    if (!user && !guestDetails) {
+      setShowGuestForm(true);
+    } else {
+      setShowCheckout(true);
+    }
     modalRef.current?.showModal();
   };
-
   const handleCloseModal = () => {
     setShowCheckout(false);
+    setShowGuestForm(false);
+    setGuestDetails(null);
     modalRef.current?.close();
   };
 
@@ -92,9 +123,10 @@ const EmbbedCheckoutButton = ({ items, disabled = false, quickBuy = false }) => 
       >
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" aria-hidden="true" />
         <div className="modal-box w-full max-w-6xl bg-white border-8 border-black p-0 shadow-2xl transform transition-all duration-300">
-          {/* Header - De Stijl inspired */}
-          <div className="bg-red-600 p-6 flex justify-between items-center border-b-8 border-black">
-            <h3 className="font-bold text-2xl text-white">Complete Your Purchase</h3>
+        <div className="bg-red-600 p-6 flex justify-between items-center border-b-8 border-black">
+            <h3 className="font-bold text-2xl text-white">
+              {showGuestForm ? "Enter Shipping Details" : "Complete Your Purchase"}
+            </h3>
             <button 
               onClick={handleCloseModal}
               className="bg-black text-white p-2 hover:bg-gray-800 transition-colors"
@@ -131,7 +163,9 @@ const EmbbedCheckoutButton = ({ items, disabled = false, quickBuy = false }) => 
 
             {/* Stripe Checkout - Right side */}
             <div className="border-8 border-black bg-white">
-              {showCheckout && (
+              {showGuestForm ? (
+                <GuestCheckoutForm onSubmit={handleGuestSubmit} />
+              ) : showCheckout && (
                 <EmbeddedCheckoutProvider 
                   stripe={stripePromise} 
                   options={{ fetchClientSecret }}
