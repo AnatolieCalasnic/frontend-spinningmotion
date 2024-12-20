@@ -9,31 +9,68 @@ const AdminOrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchError, setSearchError] = useState(null);
   const [filterStatus, setFilterStatus] = useState('ALL');
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchOrders();
   }, []);
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (searchTerm.length < 2) {
+        fetchOrders();
+        return;
+      }
+      setLoading(true);
+      setSearchError(null);
+      try {
+        const response = await fetch(`http://localhost:8080/search/orders?searchTerm=${searchTerm}`);
+        if (!response.ok) {
+          throw new Error('Search failed');
+        }
+        const data = await response.json();
+        // Applying status filter to search results if needed
+        const filteredData = filterStatus === 'ALL' 
+          ? data 
+          : data.filter(order => order?.status === filterStatus);
+        setOrders(filteredData || []);
+      } catch (error) {
+        console.error('Search error:', error);
+        setSearchError('Failed to fetch search results');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchSearchResults, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
+
+  // Fetch all orders when filter changes
+  useEffect(() => {
+    if (searchTerm.length < 2) {
+      fetchOrders();
+    }
+  }, [filterStatus]);
 
   const fetchOrders = async () => {
+    setLoading(true); 
     try {
       const response = await fetch('http://localhost:8080/purchase-history/all');
       const data = await response.json();
-      setOrders(data);
-      setLoading(false);
+      const filteredData = filterStatus === 'ALL' 
+        ? data 
+        : data.filter(order => order?.status === filterStatus);
+      setOrders(filteredData || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
-      setLoading(false);
-    }
+      setSearchError('Failed to fetch orders');
+      setOrders([]); // Set empty orders on error
+    }finally{
+        setLoading(false);
+    }    
   };
-
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.id.toString().includes(searchTerm) ||
-                         order.userId.toString().includes(searchTerm);
-    const matchesStatus = filterStatus === 'ALL' || order.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -52,6 +89,45 @@ const AdminOrdersPage = () => {
       opacity: 1
     }
   };
+  const groupOrdersByPurchaseTime = (orders) => {
+    const grouped = orders.reduce((acc, order) => {
+      const purchaseTime = new Date(order.purchaseDate).getTime();
+      const groupKey = `${order.userId || 'guest'}-${purchaseTime}`;
+      
+      if (!acc[groupKey]) {
+        acc[groupKey] = {
+          id: order.id, 
+          groupId: `ORDER-${purchaseTime}`, 
+          userId: order.userId,
+          isGuest: order.isGuest, 
+          status: order.status,
+          purchaseDate: order.purchaseDate,
+          totalAmount: 0,
+          items: [],
+          orderIds: [] 
+        };
+      }
+      const existingItem = acc[groupKey].items.find(item => item.recordId === order.recordId);
+      if (!existingItem) {
+          // Only add item if it's not already in the list
+          acc[groupKey].items.push({
+              recordId: order.recordId,
+              quantity: order.quantity,
+              price: order.price
+          });
+          // Update total amount only for new items
+          acc[groupKey].totalAmount += order.price * order.quantity;
+      }
+      
+      if (!acc[groupKey].orderIds.includes(order.id)) {
+          acc[groupKey].orderIds.push(order.id);
+      }
+      
+      return acc;
+  }, {});
+
+    return Object.values(grouped);
+  };
   const exportToPDF = () => {
     const doc = new jsPDF();
     
@@ -63,7 +139,7 @@ const AdminOrdersPage = () => {
   
     // Create table data
     const tableColumn = ["Order ID", "User ID", "Amount", "Date", "Status"];
-    const tableRows = filteredOrders.map(order => [
+    const tableRows = groupOrdersByPurchaseTime(orders).map(order => [
       order.id,
       order.userId,
       `€${order.totalAmount.toFixed(2)}`,
@@ -87,7 +163,8 @@ const AdminOrdersPage = () => {
   const handlePrint = () => {
     window.print();
   };
-  
+  const groupedOrders = groupOrdersByPurchaseTime(orders);
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       {/* Header Section */}
@@ -109,10 +186,10 @@ const AdminOrdersPage = () => {
         className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
       >
         {[
-          { label: 'Total Orders', value: orders.length, color: 'bg-red-600' },
-          { label: 'Completed', value: orders.filter(o => o.status === 'COMPLETED').length, color: 'bg-blue-600' },
-          { label: 'Pending', value: orders.filter(o => o.status === 'PENDING').length, color: 'bg-yellow-400' },
-          { label: 'Total Revenue', value: `€${orders.reduce((acc, curr) => acc + curr.totalAmount, 0).toFixed(2)}`, color: 'bg-black' }
+          { label: 'Total Orders', value: orders?.length, color: 'bg-red-600' },
+          { label: 'Completed', value: orders?.filter(o => o.status === 'COMPLETED').length, color: 'bg-blue-600' },
+          { label: 'Pending', value: orders?.filter(o => o.status === 'PENDING').length, color: 'bg-yellow-400' },
+          { label: 'Total Revenue', value: `€${groupedOrders.reduce((acc, curr) => acc + curr.totalAmount, 0).toFixed(2)}`, color: 'bg-black' }
         ].map((stat, index) => (
           <motion.div
             key={index}
@@ -200,7 +277,7 @@ const AdminOrdersPage = () => {
                 <td colSpan="6" className="text-center py-8">Loading orders...</td>
               </tr>
             ) : (
-              filteredOrders.map((order) => (
+                groupedOrders.map((order) => (
                 <motion.tr
                   key={order.id}
                   variants={itemVariants}
@@ -208,7 +285,7 @@ const AdminOrdersPage = () => {
                   onClick={() => navigate(`/admin/orders/${order.id}`)}
                 >
                   <td className="p-4 font-bold">#{order.id}</td>
-                  <td className="p-4">{order.userId}</td>
+                  <td className="p-4">  {order.userId ? order.userId : "Guest User"}</td>
                   <td className="p-4">€{order.totalAmount.toFixed(2)}</td>
                   <td className="p-4">{new Date(order.purchaseDate).toLocaleDateString()}</td>
                   <td className="p-4">

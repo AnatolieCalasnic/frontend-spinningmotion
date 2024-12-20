@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const AuthContext = createContext(null);
 
@@ -75,6 +76,7 @@ export const AuthProvider = ({ children }) => {
 
       if (!response.ok) {
         const errorData = await response.text();
+        toast.error('Login failed: ' + errorData);
         throw new Error(errorData || 'Login failed');
       }
 
@@ -82,7 +84,7 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       await transferGuestBasket(userData.id);
-
+      
       // Handles redirects based on user role
       if (userData.isAdmin) {
         navigate('/admin/dashboard');
@@ -101,13 +103,17 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('http://localhost:8080/tokens/logout', {
+      const response = await fetch('http://localhost:8080/tokens/logout', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         }
       });
+      if (!response.ok) {
+        toast.error('Logout failed');  
+        throw new Error('Logout failed');
+      }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -146,8 +152,14 @@ export const AuthProvider = ({ children }) => {
       
     } catch (error) {
       console.error('Error transferring guest basket:', error);
-      // Consider showing a user-friendly error message
-      // You might want to keep the guest basket in localStorage if transfer fails
+      toast.error('Failed to transfer guest basket', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
   return (

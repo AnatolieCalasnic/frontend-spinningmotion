@@ -23,3 +23,22 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+
+
+Cypress.Commands.add('login', (email, password) => {
+    cy.get('button').contains('Login').click()
+    cy.get('input[name="email"]').type(email)
+    cy.get('input[name="password"]').type(password)
+    cy.get('button[type="submit"]').click()
+  })
+  
+  Cypress.Commands.add('clearBasket', () => {
+    cy.window().then((win) => {
+      win.localStorage.removeItem('guestBasket')
+    })
+  })
+  Cypress.Commands.add('getLocalStorage', (key) => {
+    return cy.window().then(window => {
+      return window.localStorage.getItem(key);
+    });
+  });
