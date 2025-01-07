@@ -87,12 +87,59 @@ const AdminRecords = () => {
 
   const handleEditRecord = async () => {
     try {
-      const formattedRecord = formatRecordData(selectedRecord);
+      const formData = new FormData();
+      
+      // Remove undefined or null values from recordData
+      const recordData = {
+        title: selectedRecord.title,
+        artist: selectedRecord.artist,
+        genreId: parseInt(selectedRecord.genreId),
+        price: parseFloat(selectedRecord.price),
+        releaseYear: selectedRecord.releaseYear ? parseInt(selectedRecord.releaseYear) : null,
+        condition: selectedRecord.condition,
+        quantity: parseInt(selectedRecord.quantity) || 0,
+        imagesToDelete: selectedRecord.imagesToDelete || []
+      };
+  
+      // Clean up recordData by removing null/undefined values
+      Object.keys(recordData).forEach(key => {
+        if (recordData[key] === null || recordData[key] === undefined) {
+          delete recordData[key];
+        }
+      });
+      
+      // Create a blob from the cleaned record data
+      const recordBlob = new Blob([JSON.stringify(recordData)], {
+        type: 'application/json'
+      });
+      formData.append('record', recordBlob);
+  
+      // Handle new images if they exist
+      if (selectedRecord.newImages && selectedRecord.newImages.length > 0) {
+        selectedRecord.newImages.forEach(file => {
+          // Check file size before appending
+          if (file.size <= 5000000) { // 5MB limit
+            formData.append('images', file);
+          }
+        });
+      }
+  
+      console.log('Sending formData:', formData); // Debug log
+  
       const response = await axios.put(
         `http://localhost:8080/records/${selectedRecord.id}`, 
-        formattedRecord
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          // Add timeout and max size settings
+          timeout: 30000, // 30 seconds
+          maxContentLength: 10485760, // 10MB
+          maxBodyLength: 10485760 // 10MB
+        }
       );
-
+  
       setRecords(prev => 
         prev.map(record => 
           record.id === selectedRecord.id ? response.data : record
@@ -102,7 +149,11 @@ const AdminRecords = () => {
       setSelectedRecord(null);
     } catch (err) {
       console.error('Error updating record:', err);
-      setError('Failed to update record');
+      if (err.response?.status === 413) {
+        setError('File size too large. Please upload smaller images (max 5MB each).');
+      } else {
+        setError('Failed to update record: ' + err.message);
+      }
     }
   };
 

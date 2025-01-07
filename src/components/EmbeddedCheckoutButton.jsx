@@ -8,7 +8,7 @@ import { CreditCard, X } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import GuestCheckoutForm from './GuestCheckoutForm'; 
 
-const EmbbedCheckoutButton = ({ items, disabled = false, quickBuy = false }) => {
+const EmbeddedCheckoutButton = ({ items, disabled = false, quickBuy = false }) => {
   const { user } = useAuth();
   const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -181,4 +181,5 @@ const EmbbedCheckoutButton = ({ items, disabled = false, quickBuy = false }) => 
   );
 };
 
-export default EmbbedCheckoutButton;
+export default EmbeddedCheckoutButton;
+

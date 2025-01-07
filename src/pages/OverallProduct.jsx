@@ -10,6 +10,7 @@ import {
   ArrowUpDown
 } from 'lucide-react';
 import axios from 'axios';
+import ProductCard from '../components/ProductCard';
 
 export default function OverallProduct() {
   const location = useLocation();
@@ -63,52 +64,7 @@ export default function OverallProduct() {
     currentPage * itemsPerPage // End index
   );
 
-  const ProductCard = ({ product }) => (
-    <Link 
-      to={`/product/${product.id}`}
-      className={`block border-4 border-black bg-white transition-transform hover:scale-105
-        ${viewMode === 'list' ? 'flex gap-4' : 'flex flex-col'}`}
-    >
-      {/* Image Container */}
-      <div className={`relative ${viewMode === 'list' ? 'w-48' : 'w-full'} aspect-square bg-white`}>
-        <img 
-          src={'logo512.png'}
-          alt={product.title}
-          className="w-full h-full object-cover"
-        />
-        {product.discount && (
-          <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 font-bold">
-            -{product.discount}%
-          </div>
-        )}
-      </div>
-      
-      {/* Product Info */}
-      <div className={`flex flex-col ${viewMode === 'list' ? 'flex-1 p-4' : 'p-4'}`}>
-        <div className="bg-blue-600 p-2 mb-2">
-          <h3 className="text-white font-bold truncate">{product.title}</h3>
-          <p className="text-white text-sm truncate">{product.artist}</p>
-        </div>
-        
-        <div className="bg-yellow-400 p-2">
-          <div className="flex justify-center items-center">
-            <div className="text-n font-bold">€{product.price}</div>
-            {product.originalPrice && (
-              <div className="text-sm line-through">€ {product.originalPrice}</div>
-            )}
-          </div>
-          {product.inStock > 0 ? (
-            <p className="text-sm text-green-800 font-bold">Out stock</p>
-          ) : (
-            <p className="text-sm text-red-600 font-bold">In stock</p>
-          )}
-          <p className="text-sm mt-1">Year: {product.year}</p>
-          <p className="text-sm">Condition: {product.condition}</p>
-        </div>
-      </div>
-    </Link>
-  );
-
+  
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
   }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import SearchResultImage from './SearchResultImage';
 export default function SearchBar({ onClose }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
@@ -23,6 +23,7 @@ export default function SearchBar({ onClose }) {
                     throw new Error('Search failed');
                 }
                 const data = await response.json();
+                console.log('Search results:', data); 
                 setSearchResults(data);
             } catch (error) {
                 console.error('Search error:', error);
@@ -69,13 +70,7 @@ export default function SearchBar({ onClose }) {
                                 <span className="ml-2 text-gray-500">({record.year})</span>
                             </div>
                         </div>
-                        {record.images && record.images[0] && (
-                            <img 
-                                src={record.images[0]} 
-                                alt={record.title}
-                                className="w-12 h-12 object-cover ml-4"
-                            />
-                        )}
+                        <SearchResultImage recordId={record.id} />
                     </div>
                 ))}
             </div>

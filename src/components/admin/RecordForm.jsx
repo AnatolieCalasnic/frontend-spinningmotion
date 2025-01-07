@@ -1,10 +1,11 @@
+import ImageUpload from "./ImageUpload";
 const RecordForm = ({ record, index, isEdit, onChange, genres }) => {
-    const handleYearChange = (e) => {
-      const value = e.target.value;
-      if (value === '' || /^\d{0,4}$/.test(value)) {
-        onChange(index, 'releaseYear', value);
-      }
-    };
+  const handleYearChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || /^\d{0,4}$/.test(value)) {
+      onChange(index, 'releaseYear', value === '' ? null : parseInt(value, 10));
+    }
+  };
   
     const handlePriceChange = (e) => {
       const value = e.target.value;
@@ -19,9 +20,42 @@ const RecordForm = ({ record, index, isEdit, onChange, genres }) => {
         onChange(index, 'quantity', value);
       }
     };
-  
+    const handleImagesChange = (action, payload) => {
+      if (action === 'add') {
+        // For new images being added
+        onChange(index, 'newImages', [...(record.newImages || []), ...payload]);
+      } else if (action === 'remove') {
+        const imageIndex = payload;
+        const currentImages = record.images || [];
+        
+        // If removing existing image, mark for deletion
+        if (imageIndex < currentImages.length) {
+          const removedImage = currentImages[imageIndex];
+          if (removedImage.id) {
+            onChange(index, 'imagesToDelete', [...(record.imagesToDelete || []), removedImage.id]);
+          }
+          // Update current images array
+          const updatedImages = [...currentImages];
+          updatedImages.splice(imageIndex, 1);
+          onChange(index, 'images', updatedImages);
+        } else {
+          // Remove from new images
+          const newImageIndex = imageIndex - currentImages.length;
+          const updatedNewImages = [...(record.newImages || [])];
+          updatedNewImages.splice(newImageIndex, 1);
+          onChange(index, 'newImages', updatedNewImages);
+        }
+      }
+    };
     return (
       <div className="grid grid-cols-2 gap-4 p-4 border-4 border-black mb-4">
+         <div className="col-span-2">
+        <ImageUpload 
+          existingImages={record.images || []}
+          onChange={handleImagesChange}
+          maxImages={4}
+        />
+      </div>
         <div className="col-span-2 md:col-span-1">
           <label className="block font-bold mb-2">Title</label>
           <input

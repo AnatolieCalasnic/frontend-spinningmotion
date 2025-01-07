@@ -23,6 +23,7 @@ import AdminLayout from './components/admin/AdminLayout';
 import { ToastContainer } from 'react-toastify';
 import WebSocketNotifications from './components/websocket/WebSocketNotifications';
 import 'react-toastify/dist/ReactToastify.css';
+import NewReleasePage from './pages/NewReleasePage';
 
 
 const PublicLayout = ({ children }) => {
@@ -98,6 +99,8 @@ function App() {
                   <Route path="products" element={<OverallProduct />} />
                   <Route path="basket" element={<Basket />} />
                   <Route path="success" element={<SuccessPage />} />
+                  <Route path="new-releases" element={<NewReleasePage />} />
+                  <Route path="new-releases/:genre" element={<NewReleasePage />} />
                 </Routes>
               </PublicLayout>
             }

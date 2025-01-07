@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Play, Pause, Loader, Facebook, Instagram, Twitter } from 'lucide-react';
 import { useAuthRedirect } from '../hooks/useAuthRedirect';
+import ProductCard from '../components/ProductCard';
 
 
 export default function Home() {
@@ -11,10 +12,12 @@ export default function Home() {
   const [featuredAlbums, setFeaturedAlbums] = useState([]);
   const [genres, setGenres] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [latestReleases, setLatestReleases] = useState([]);
 
   useEffect(() => {
     loadFeaturedAlbums();
     loadGenres();
+    loadLatestReleases();
   }, []);
 
   const loadFeaturedAlbums = async () => {
@@ -44,6 +47,15 @@ export default function Home() {
       setGenres([]);
     }
   };
+  const loadLatestReleases = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/records/new-releases');
+      setLatestReleases(response.data.slice(0, 3)); // Get only the first 3 records
+    } catch (error) {
+      console.error("Error loading latest releases:", error);
+      setLatestReleases([]);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-black font-sans">
@@ -65,15 +77,21 @@ export default function Home() {
           {/* New Releases */}
           <div className="col-span-8 bg-blue-600 p-6">
             <h2 className="text-white text-2xl font-bold mb-4">NEW RELEASES</h2>
+            <Link 
+                to="/new-releases" 
+                className="text-white hover:underline"
+              >
+                View All
+              </Link>
             {isLoading ? (
-              <div className="flex justify-center items-center h-48">
-                <Loader className="animate-spin text-white h-12 w-12" />
+              <div className="flex justify-center items-center h-32">
+                <Loader className="animate-spin text-white h-8 w-8" />
               </div>
             ) : (
-              <div className="grid grid-cols-4 gap-4">
-                {featuredAlbums.length > 0 ? (
-                  featuredAlbums.slice(0, 4).map((album, index) => (
-                    <div key={index} className="bg-white aspect-square"></div>
+              <div className="grid grid-cols-3 gap-3">
+                  {latestReleases.length > 0 ? (
+                  latestReleases.map((record) => (
+                    <ProductCard key={record.id} product={record} />
                   ))
                 ) : (
                   <p className="col-span-4 text-white text-center">No new releases available</p>
