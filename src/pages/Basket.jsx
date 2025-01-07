@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2, Plus, Minus, RefreshCw, CreditCard, X, ShoppingBag } from 'lucide-react';
-import EmbbedCheckoutButton from '../components/EmbbedCheckoutButton'; 
-
+import EmbeddedCheckoutButton from '../components/EmbeddedCheckoutButton';
+import BasketItemImage from '../components/BasketItemImage';
 const BasketPage = () => {
   const [basket, setBasket] = useState({ items: [], totalAmount: 0 });
 
@@ -111,7 +111,7 @@ const BasketPage = () => {
                 <div key={item.recordId} className="p-6 grid grid-cols-12 gap-4 items-center hover:bg-gray-50 transition-colors">
                   {/* Image */}
                   <div className="col-span-2">
-                    <div className="aspect-square bg-blue-600 border-4 border-black" />
+                  <BasketItemImage recordId={item.recordId} />
                   </div>
 
                   {/* Details */}
@@ -206,7 +206,7 @@ const BasketPage = () => {
               </div>
 
               <div className="space-y-4">
-                <EmbbedCheckoutButton
+                <EmbeddedCheckoutButton
                   items={basket.items}
                   disabled={basket.items.length === 0}
                 />

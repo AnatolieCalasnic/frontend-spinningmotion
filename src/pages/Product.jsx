@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link} from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import axios from 'axios';
+import ProductCard from '../components/ProductCard';
+import NewReleases from '../components/NewReleases';
 
 
 import jazzFestImage from '../images/jazzfest-011824-98f274e7866c4dc89f0957d20210973e.jpg';
@@ -66,6 +68,8 @@ const ProductPage = () => {
   const [newsItems, setNewsItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [newReleases, setNewReleases] = useState([]);
+
 
 
   useEffect(() => {
@@ -76,6 +80,9 @@ const ProductPage = () => {
         // Call your backend API to get records by genre
         const response = await axios.get(`http://localhost:8080/records/genre/${normalizedGenre}`);
         setProducts(response.data);
+        
+        const newReleasesResponse = await axios.get(`http://localhost:8080/records/new-releases/${normalizedGenre}`);
+        setNewReleases(newReleasesResponse.data);
         
         // Keep the news data fake for now
         setNewsItems(fakeNewsData[normalizedGenre] || []);
@@ -92,6 +99,7 @@ const ProductPage = () => {
       fetchProducts();
     }
   }, [genre]);
+
 
   const formattedGenre = genre.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
@@ -110,48 +118,26 @@ const ProductPage = () => {
        <div className="mb-12 border-4 border-black p-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold bg-yellow-400 p-2">New Releases</h2>
-          <button className="bg-black text-white px-4 py-2 flex items-center">
+          <Link to={`/new-releases/${genre}`}
+              className="bg-black text-white px-4 py-2 flex items-center">
             View all <ArrowRight className="ml-2" size={20} />
-          </button>
+          </Link>
         </div>
-        <div className="grid grid-cols-5 gap-4">
-        {products.slice(0, 5).map((record, index) => (
-            <Link 
-              key={record.id} 
-              to={`/product/${record.id}`} 
-              className="text-center border-2 border-black p-2 hover:bg-gray-100 transition-colors"
-            >
-              <div className="aspect-square mb-2 overflow-hidden">
-                <div className={`w-full h-full ${index % 2 === 0 ? 'bg-blue-600' : 'bg-red-600'}`} />
-              </div>
-              <h3 className="font-bold text-sm">{record.title}</h3>
-              <p className="text-xs">{record.artist}</p>
-              <p className="font-bold text-sm mt-1 bg-yellow-400 inline-block px-2">
-                €{record.price.toFixed(2)}
-              </p>
-            </Link>
-          ))}
-        </div>
+        
+        {newReleases.length === 0 ? (
+        <div className="text-center py-4 text-gray-600">No releases as of yet</div>
+        ) : (
+          <NewReleases genre={genre} limit={5} />
+        )}     
       </div>
 
-      {/* Edition Records Campaign Section */}
+      {/* All Records Section */}
       <div className="mb-12 border-4 border-black p-4">
         <h2 className="text-2xl font-bold mb-4 bg-blue-600 text-white p-2">All records</h2>
         <div className="grid grid-cols-5 gap-4">
-          {products.slice(5, 10).map((record, index) => (
-            <Link 
-            key={record.id} 
-            to={`/product/${record.id}`} 
-            className="text-center border-2 border-black p-2 hover:bg-gray-100 transition-colors"
-          >
-            <div className={`aspect-square mb-2 ${index % 2 === 0 ? 'bg-yellow-400' : 'bg-red-600'}`} />
-            <h3 className="font-bold text-sm">{record.title}</h3>
-            <p className="text-xs">{record.artist}</p>
-            <p className="font-bold text-sm mt-1 bg-blue-600 text-white inline-block px-2">
-              €{record.price.toFixed(2)}
-            </p>
-          </Link>
-          ))}
+          {products.slice(0, 5).map((record) => (
+             <ProductCard key={record.id} product={record} />
+            ))}
           <Link to={`/products?genre=${genre}`}  className="flex items-center justify-center border-2 border-black hover:bg-gray-100 transition-colors">
             <button className="bg-black text-white p-4 w-full h-full">
               <ArrowRight size={24} />

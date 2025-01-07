@@ -1,8 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const DashboardStats = ({ stats }) => {
-  const { totalOrders, totalRevenue, activeUsers } = stats;
+  const { totalOrders, totalRevenue } = stats;
+  const [activeUsers, setActiveUsers] = useState(0);
+  useEffect(() => {
+    const handleActiveUsersUpdate = (event) => {
+      console.log('Received active users update in dashboard:', event.detail.count);
+      setActiveUsers(event.detail.count);
+    }
 
+    window.addEventListener('activeUsersUpdate', handleActiveUsersUpdate);
+    if (window.stompClient?.connected) {
+      window.stompClient.send("/app/request-active-users", {}, "");
+    }
+    return () => {
+      window.removeEventListener('activeUsersUpdate', handleActiveUsersUpdate);
+    };
+  }, []);
   return (
     <div className="grid grid-cols-3 gap-6 mb-8">
       <div className="bg-blue-600 p-6 border-4 border-black">

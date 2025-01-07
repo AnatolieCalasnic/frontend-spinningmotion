@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate  } from 'react-router-dom';
 import { Plus, Minus, ShoppingCart, CreditCard, Info, Play, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
-import EmbbedCheckoutButton from '../components/EmbbedCheckoutButton';
-
+import EmbeddedCheckoutButton from '../components/EmbeddedCheckoutButton';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -12,29 +13,66 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
+  const [images, setImages] = useState([]);
 
  // In your fetchProduct function, after getting the response:
 useEffect(() => {
-  const fetchProduct = async () => {
+  const fetchProductAndImages = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8080/records/${id}`);
-      console.log('API Response:', response.data); // For debugging
-      setProduct(response.data);
-    } catch (err) {
-      console.error('Error fetching product:', err);
-      setError('Failed to load product');
-    } finally {
-      setLoading(false);
-    }
-  };
+      // Fetch product details
+      const productResponse = await axios.get(`http://localhost:8080/records/${id}`);
+      setProduct(productResponse.data);
 
-  fetchProduct();
+     // Fetch images if the product has any
+     if (productResponse.data.images && productResponse.data.images.length > 0) {
+      const imagesPromises = productResponse.data.images.map(async (image) => {
+        try {
+          const imageResponse = await axios.get(
+            `http://localhost:8080/records/images/${image.id}`,
+            { responseType: 'blob' }
+          );
+          return {
+            url: URL.createObjectURL(imageResponse.data),
+            id: image.id,
+            type: image.imageType
+          };
+        } catch (error) {
+          console.error('Error fetching image:', error);
+          return null;
+        }
+      });
+
+      const loadedImages = await Promise.all(imagesPromises);
+      setImages(loadedImages.filter(img => img !== null));
+    }
+  } catch (err) {
+    console.error('Error fetching product:', err);
+    setError('Failed to load product');
+  } finally {
+    setLoading(false);
+  }
+};
+
+fetchProductAndImages();
+
+// Cleanup image URLs
+return () => {
+  images.forEach(image => {
+    if (image?.url) {
+      URL.revokeObjectURL(image.url);
+    }
+  });
+};
 }, [id]);
 
 // Update the addToBasket function:
 const addToBasket = async () => {
   try {
+    if (product.quantity < 1) {
+      toast.error('This item is currently out of stock');
+      return;
+    }
     const savedBasket = localStorage.getItem('guestBasket');
     const currentBasket = savedBasket ? JSON.parse(savedBasket) : { items: [], totalAmount: 0 };
     
@@ -52,10 +90,17 @@ const addToBasket = async () => {
       const newQuantity = currentBasket.items[existingItemIndex].quantity + quantity;
       if (newQuantity <= product.quantity) {
         currentBasket.items[existingItemIndex].quantity = newQuantity;
+        toast.success(`Updated quantity of "${product.title}" in basket`);
       } else {
-        throw new Error('Not enough stock available');
+        toast.warning('Not enough stock available');
       }
     } else {
+      
+      // Check if requested quantity is available before adding
+      if (quantity > product.quantity) {
+        toast.warning('Not enough stock available');
+        return;
+      }
       // Add new item
       currentBasket.items.push({
         recordId: parseInt(product.id),
@@ -67,9 +112,10 @@ const addToBasket = async () => {
         year: product.year,
         condition: product.condition
       });
+      toast.success(`Added "${product.title}" to basket`);
     }
 
-    // Update total amount
+    // Total amount
     currentBasket.totalAmount = currentBasket.items.reduce(
       (sum, item) => sum + (parseFloat(item.price) * item.quantity), 
       0
@@ -85,10 +131,9 @@ const addToBasket = async () => {
     const verifyBasket = localStorage.getItem('guestBasket');
     console.log('Verified basket in localStorage:', JSON.parse(verifyBasket));
     
-    alert('Item added to basket successfully!');
   } catch (err) {
     console.error('Error adding to basket:', err);
-    alert(err.message || 'Failed to add item to basket');
+    toast.error(err.message || 'Failed to add item to basket');
   }
 };
 const getQuickBuyItem = () => {
@@ -104,12 +149,6 @@ const getQuickBuyItem = () => {
     condition: product.condition
   }];
 };
-  const images = [
-    { color: 'bg-blue-600' },
-    { color: 'bg-red-600' },
-    { color: 'bg-yellow-400' },
-    { color: 'bg-black' }
-  ];
 
 
   const handleQuantityChange = (change) => {
@@ -134,9 +173,20 @@ const getQuickBuyItem = () => {
         <div className="col-span-7 space-y-8">
           {/* Main Image */}
           <div className="border-8 border-black">
-            <div className="relative">
-              <div className={`aspect-square ${images[activeImage].color}`} />
-              {/* Image Navigation */}
+          <div className="relative aspect-square">
+        {images.length > 0 ? (
+          <img 
+            src={images[activeImage].url}
+            alt={`${product.title} - Image ${activeImage + 1}`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+            <span className="text-gray-400">No image available</span>
+          </div>
+        )}
+            {images.length > 1 && (
+              <>
               <button 
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white p-2 border-4 border-black hover:bg-yellow-400"
                 onClick={() => setActiveImage((prev) => (prev > 0 ? prev - 1 : images.length - 1))}
@@ -149,19 +199,25 @@ const getQuickBuyItem = () => {
               >
                 <ChevronRight size={24} />
               </button>
+              </>
+            )}
             </div>
           </div>
 
           {/* Thumbnail Grid */}
           <div className="grid grid-cols-4 gap-4">
-            {images.map((img, index) => (
+            {images.map((image, index) => (
               <button
-                key={index}
+                key={image.id}
                 className={`border-4 ${activeImage === index ? 'border-blue-600' : 'border-black'} p-1`}
                 onClick={() => setActiveImage(index)}
               >
-                <div className={`aspect-square ${img.color}`} />
-              </button>
+                 <img
+                src={image.url}
+                alt={`${product.title} - Thumbnail ${index + 1}`}
+                className="aspect-square object-cover"
+                />
+             </button>
             ))}
           </div>
 
@@ -245,14 +301,14 @@ const getQuickBuyItem = () => {
 
           {/* Action Buttons */}
           <div className="space-y-4">
-            <EmbbedCheckoutButton 
+            <EmbeddedCheckoutButton 
               className="w-full bg-black text-white p-6 flex items-center justify-center font-bold hover:bg-gray-900 transition-colors text-lg"
               items={getQuickBuyItem()}
               disabled={product.quantity < 1}
               quickBuy={true}            >
               <CreditCard className="mr-2" size={24} />
               Quick Buy
-            </EmbbedCheckoutButton>
+            </EmbeddedCheckoutButton>
             <button 
               className="w-full border-4 border-black p-6 flex items-center justify-center font-bold hover:bg-gray-100 transition-colors text-lg"
               onClick={addToBasket}
