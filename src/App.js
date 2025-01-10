@@ -5,7 +5,7 @@ import './App.css';
 import Navbar from './components/site_navigation/Navbar';
 import Footer from './components/site_navigation/Footer';
 import Home from './pages/Home';
-import Profile from './pages/Profile';
+import Profile from './pages/user_profile/Profile';
 import Product from './pages/Product';
 import Basket from './pages/Basket';
 import SingleProduct from './pages/SingleProduct';
@@ -24,8 +24,10 @@ import { ToastContainer } from 'react-toastify';
 import WebSocketNotifications from './components/websocket/WebSocketNotifications';
 import 'react-toastify/dist/ReactToastify.css';
 import NewReleasePage from './pages/NewReleasePage';
-
-
+import UserOrdersPage from './pages/user_profile/UserOrdersPage';
+import UserOrderDetailsPage from './pages/user_profile/UserOrderDetailsPage';
+import CouponPage from './pages/user_profile/CouponPage';
+import ArtistCollection from './pages/ArtistCollection';
 const PublicLayout = ({ children }) => {
   const { user } = useAuth();
   
@@ -94,6 +96,30 @@ function App() {
                       </ProtectedRoute>
                     } 
                   />
+                  <Route 
+                    path="my-orders" 
+                    element={
+                      <ProtectedRoute>
+                        <UserOrdersPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="my-orders/:id" 
+                    element={
+                      <ProtectedRoute>
+                        <UserOrderDetailsPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="my-coupons" 
+                    element={
+                      <ProtectedRoute>
+                        <CouponPage />
+                      </ProtectedRoute>
+                    } 
+                  />
                   <Route path="genre/:genre" element={<Product />} />
                   <Route path="product/:id" element={<SingleProduct />} />
                   <Route path="products" element={<OverallProduct />} />
@@ -101,6 +127,7 @@ function App() {
                   <Route path="success" element={<SuccessPage />} />
                   <Route path="new-releases" element={<NewReleasePage />} />
                   <Route path="new-releases/:genre" element={<NewReleasePage />} />
+                  <Route path="artist/:artistName" element={<ArtistCollection />} />
                 </Routes>
               </PublicLayout>
             }

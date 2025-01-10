@@ -8,8 +8,20 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-lg font-bold mb-4">About Us</h3>
-            <p className="text-sm">Great store with great choice of all kind of music.</p>
+            <div className="flex flex-col items-start justify-center space-y-2">
+              <span className="text-5xl font-bold uppercase tracking-tighter text-white">
+                Spin
+              </span>
+              <span className="text-5xl font-bold uppercase tracking-tighter text-yellow-500 ml-6 border-l-4 border-red-500 pl-4">
+                Life
+              </span>
+              <span className="text-5xl font-bold uppercase tracking-tighter text-blue-500 ml-12 border-l-4 border-white pl-4">
+                Feel
+              </span>
+              <span className="text-5xl font-bold uppercase tracking-tighter text-white ml-18">
+                Vinyl
+              </span>
+            </div>
           </div>
           <div>
             <h3 className="text-lg font-bold mb-4">Quick Links</h3>

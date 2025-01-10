@@ -5,7 +5,9 @@ import EmbeddedCheckoutButton from '../components/EmbeddedCheckoutButton';
 import BasketItemImage from '../components/BasketItemImage';
 const BasketPage = () => {
   const [basket, setBasket] = useState({ items: [], totalAmount: 0 });
-
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
   // Update how we load the basket
   useEffect(() => {
     const loadBasket = () => {
@@ -78,6 +80,29 @@ const BasketPage = () => {
   const handleClearBasket = () => {
     setBasket({ items: [], totalAmount: 0 });
     localStorage.removeItem('guestBasket');
+  };
+  const handleApplyCoupon = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/coupons/validate/${couponCode}`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Invalid coupon');
+      }
+
+      const coupon = await response.json();
+      
+      // Calculate discount amount
+      const discount = (basket.totalAmount * coupon.discountPercentage) / 100;
+      
+      setAppliedCoupon(coupon);
+      setDiscountAmount(discount);
+      setCouponCode('');
+    } catch (error) {
+      console.error('Error applying coupon:', error);
+      alert('Invalid coupon code or coupon has expired');
+    }
   };
 
   return (
@@ -192,6 +217,30 @@ const BasketPage = () => {
                   <span>Subtotal</span>
                   <span>€{basket.totalAmount.toFixed(2)}</span>
                 </div>
+                <div className="space-y-2">
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      placeholder="Enter coupon code"
+                      className="flex-1 p-2 border-2 border-gray-300 text-black"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      className="bg-yellow-400 text-black px-4 py-2 font-bold hover:bg-yellow-500"
+                      disabled={!couponCode}
+                    >
+                      Apply
+                    </button>
+                  </div>
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-green-400">
+                      <span>Discount ({appliedCoupon.discountPercentage}%)</span>
+                      <span>-€{discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
                   <span className="text-green-400">Free</span>
@@ -199,7 +248,7 @@ const BasketPage = () => {
                 <div className="border-t border-gray-600 pt-4">
                   <div className="flex justify-between text-xl font-bold">
                     <span>Total</span>
-                    <span>€{basket.totalAmount.toFixed(2)}</span>
+                    <span>€{(basket.totalAmount-(discountAmount || 0)).toFixed(2)}</span>
                   </div>
                   <div className="text-sm text-gray-400 text-right">Including VAT</div>
                 </div>
@@ -209,6 +258,7 @@ const BasketPage = () => {
                 <EmbeddedCheckoutButton
                   items={basket.items}
                   disabled={basket.items.length === 0}
+                  appliedCoupon={appliedCoupon}
                 />
                 <Link
                   to="/products"

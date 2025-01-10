@@ -8,7 +8,7 @@ import { CreditCard, X } from "lucide-react";
 import { useAuth } from '../context/AuthContext';
 import GuestCheckoutForm from './GuestCheckoutForm'; 
 
-const EmbeddedCheckoutButton = ({ items, disabled = false, quickBuy = false }) => {
+const EmbeddedCheckoutButton = ({ items, disabled = false, quickBuy = false, appliedCoupon }) => {
   const { user } = useAuth();
   const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -50,7 +50,12 @@ const EmbeddedCheckoutButton = ({ items, disabled = false, quickBuy = false }) =
           metadata: {
             userId: user?.id || '', // Send user ID if logged in
             isGuest: !user, // true if no user is logged in
+            couponCode: appliedCoupon?.couponCode
           },
+          coupon: appliedCoupon ? {
+            code: appliedCoupon.couponCode,
+            discountPercentage: appliedCoupon.discountPercentage
+          } : null,
             guestDetails: !user ? {
               fname: guestDetails.fname,
               lname: guestDetails.lname,
@@ -81,7 +86,16 @@ const EmbeddedCheckoutButton = ({ items, disabled = false, quickBuy = false }) =
     } finally {
       setLoading(false);
     }
-  }, [items, user, guestDetails, quickBuy]);
+  }, [items, user, guestDetails, quickBuy, appliedCoupon]);
+
+  const calculateTotal = () => {
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    if (appliedCoupon) {
+      const discount = (subtotal * appliedCoupon.discountPercentage) / 100;
+      return subtotal - discount;
+    }
+    return subtotal;
+  };
 
   const handleCheckoutClick = () => {
     if (!items.length) {
@@ -96,6 +110,7 @@ const EmbeddedCheckoutButton = ({ items, disabled = false, quickBuy = false }) =
     }
     modalRef.current?.showModal();
   };
+
   const handleCloseModal = () => {
     setShowCheckout(false);
     setShowGuestForm(false);
@@ -154,9 +169,14 @@ const EmbeddedCheckoutButton = ({ items, disabled = false, quickBuy = false }) =
                   <div className="flex justify-between items-center font-bold text-xl">
                     <span>Total</span>
                     <span className="bg-yellow-400 px-4 py-2 border-4 border-black">
-                      €{items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}
+                    €{calculateTotal().toFixed(2)}
                     </span>
                   </div>
+                  {appliedCoupon && (
+                  <div className="text-green-500 text-sm mt-2">
+                    {appliedCoupon.discountPercentage}% discount applied
+                  </div>
+                )}
                 </div>
               </div>
             </div>
