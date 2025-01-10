@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Play, Pause, Loader, Facebook, Instagram, Twitter } from 'lucide-react';
+import { Play, Pause, Loader, Facebook, Instagram, Twitter, Music} from 'lucide-react';
 import { useAuthRedirect } from '../hooks/useAuthRedirect';
 import ProductCard from '../components/ProductCard';
-
+import FeaturedArtistCard from '../components/FeaturedArtistCard';
 
 export default function Home() {
   useAuthRedirect();
@@ -13,6 +13,7 @@ export default function Home() {
   const [genres, setGenres] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [latestReleases, setLatestReleases] = useState([]);
+  const [popularArtists, setPopularArtists] = useState([]);
 
   useEffect(() => {
     loadFeaturedAlbums();
@@ -20,6 +21,20 @@ export default function Home() {
     loadLatestReleases();
   }, []);
 
+  useEffect(() => {
+    const loadPopularArtists = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/records/popular-artists');
+        setPopularArtists(response.data);
+      } catch (error) {
+        console.error("Error loading popular artists:", error);
+        setPopularArtists([]);
+      }
+    };
+  
+    loadPopularArtists();
+  }, []);
+  
   const loadFeaturedAlbums = async () => {
     setIsLoading(true);
     try {
@@ -131,9 +146,47 @@ export default function Home() {
           <div className="col-span-8 bg-black text-white p-6">
             <h2 className="text-2xl font-bold mb-4">FEATURED ARTISTS</h2>
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white aspect-square"></div>
-              <div className="bg-red-600 aspect-square"></div>
-              <div className="bg-blue-600 aspect-square"></div>
+            {isLoading ? (
+                <div className="col-span-3 flex justify-center items-center h-32">
+                  <Loader className="animate-spin text-white h-8 w-8" />
+                </div>
+              ) : popularArtists.length > 0 ? (
+                popularArtists.map((artist, index) => (
+                  <div 
+                    key={artist.id} 
+                    className="bg-white text-black border-4 border-black p-4 overflow-hidden"
+                  >
+                    {/* Artist Image or Placeholder */}
+                    <FeaturedArtistCard artist={artist} />
+                    
+                    {/* Artist Info */}
+                    <div className="mb-4">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-bold text-xl">{artist.artist}</h3>
+                        <span className="text-sm font-bold text-red-600">
+                          #{index + 1}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="bg-gray-100 p-2 text-center">
+                          <span className="block font-bold text-red-600">
+                            {artist.title || 'Top Album'}
+                          </span>
+                          <span className="text-xs">Best Selling</span>
+                        </div>
+                        <Link 
+                          to={`/artist/${artist.artist.toLowerCase().replace(/\s+/g, '-')}`}
+                          className="bg-red-600 text-white p-2 text-center uppercase font-bold hover:bg-red-700 transition-colors"
+                        >
+                          View Collection
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="col-span-3 text-center">No featured artists available</p>
+              )}
             </div>
           </div>
 
