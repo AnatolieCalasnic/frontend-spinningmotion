@@ -4,22 +4,22 @@ import { Facebook, Instagram, Twitter } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-800 text-white py-8">
+    <footer className="bg-red-600 text-white py-8">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex flex-col items-start justify-center space-y-2">
               <span className="text-5xl font-bold uppercase tracking-tighter text-white">
-                Spin
+                Spinning
               </span>
               <span className="text-5xl font-bold uppercase tracking-tighter text-yellow-500 ml-6 border-l-4 border-red-500 pl-4">
-                Life
-              </span>
-              <span className="text-5xl font-bold uppercase tracking-tighter text-blue-500 ml-12 border-l-4 border-white pl-4">
                 Feel
               </span>
-              <span className="text-5xl font-bold uppercase tracking-tighter text-white ml-18">
+              <span className="text-5xl font-bold uppercase tracking-tighter text-blue-500 ml-12 border-l-4 border-white pl-4">
                 Vinyl
+              </span>
+              <span className="text-5xl font-bold uppercase tracking-tighter text-white ml-18">
+                Motion
               </span>
             </div>
           </div>
@@ -27,9 +27,8 @@ const Footer = () => {
             <h3 className="text-lg font-bold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li><Link to="/new-releases" className="hover:underline">New Releases</Link></li>
-              <li><Link to="/pre-orders" className="hover:underline">Pre-orders</Link></li>
+              <li><Link to="/products" className="hover:underline">All Product Overview</Link></li>
               <li><Link to="/best-sellers" className="hover:underline">Best Sellers</Link></li>
-              <li><Link to="/deals" className="hover:underline">Deals & Discounts</Link></li>
             </ul>
           </div>
           <div>
@@ -38,7 +37,6 @@ const Footer = () => {
               <li><Link to="/faq" className="hover:underline">FAQ</Link></li>
               <li><Link to="/shipping" className="hover:underline">Shipping Information</Link></li>
               <li><Link to="/returns" className="hover:underline">Returns & Exchanges</Link></li>
-              <li><Link to="/contact" className="hover:underline">Contact Us</Link></li>
             </ul>
           </div>
           <div>
@@ -62,7 +60,7 @@ const Footer = () => {
             </div>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t border-gray-700 text-center text-sm">
+        <div className="mt-8 pt-8 border-t border-white text-center text-sm">
           <p>&copy; 2024 Spinning Motion. All rights reserved.</p>
         </div>
       </div>

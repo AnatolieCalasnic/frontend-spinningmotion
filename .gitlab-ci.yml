@@ -1,0 +1,71 @@
+stages:
+  - build
+  - e2e_test
+  - test
+  - deploy
+
+cache:
+  paths:
+    - node_modules/
+
+before_script:
+  
+  - |
+    if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+      Write-Host "Installing Node.js..."
+      $nodejsUrl = "https://nodejs.org/dist/v18.17.0/node-v18.17.0-x64.msi"
+      $installerPath = "$env:TEMP\nodejs_installer.msi"
+      Invoke-WebRequest -Uri $nodejsUrl -OutFile $installerPath
+      Start-Process msiexec.exe -Wait -ArgumentList "/i "$installerPath" /quiet"
+      $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    }
+
+build:
+  stage: build
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+
+
+cypress_e2e:
+  stage: e2e_test
+  image: cypress/browsers:node18.12.0-chrome107
+  script:
+    - npm ci
+    # Start the application in the background
+    - npm run preview &
+    # Wait for the application to be ready
+    - sleep 10
+    # Run Cypress tests
+    - npx cypress run --browser chrome
+  artifacts:
+    when: always
+    paths:
+      - cypress/videos//*
+      - cypress/screenshots//*
+    expire_in: 1 week
+  allow_failure: false
+
+
+
+deploy_staging:
+  stage: deploy
+  script:
+    - |
+      # Create Docker network if it doesn't exist
+      if (! docker network inspect spinningmotion_network -q) {
+        docker network create spinningmotion_network
+      }
+      # Stop and remove any existing container for the frontend
+      docker ps -q --filter "name=spinningmotion-frontend" | ForEach-Object { docker stop $_ }
+      docker ps -aq --filter "name=spinningmotion-frontend" | ForEach-Object { docker rm $_ }
+    - docker build -t spinningmotion-frontend:latest .
+    - docker run -d --name spinningmotion-frontend --network spinningmotion_network -p 3000:80 spinningmotion-frontend:latest
+  only:
+    - main
+  environment:
+    name: staging

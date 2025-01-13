@@ -17,15 +17,34 @@ const AdminOrderDetailsPage = () => {
     fetchOrderDetails();
   }, [id]);
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      if (orders.length > 0 && !orders[0].isGuest && orders[0].userId) {
+    const fetchCustomerDetails = async () => {
+      if (orders.length > 0) {
+        const order = orders[0];
         setLoadingUser(true);
         try {
-          const response = await fetch(`http://localhost:8080/user/${orders[0].userId}`);
-          if (response.ok) {
-            const userData = await response.json();
+          if (order.isGuest) {
+          // Fetch guest details
+          const guestResponse = await fetch(`http://localhost:8080/guest-orders/${order.purchaseHistoryId}`);
+          if (guestResponse.ok) {
+            const guestData = await guestResponse.json();
+            setGuestDetails(guestData);
+          } else {
+            console.error('Error fetching guest details:', guestResponse.status);
+          } }else if (order.userId) {
+          const userResponse = await fetch(`http://localhost:8080/user/${order.userId}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
             setUserDetails(userData);
+          }else {
+            console.error('Error fetching user details:', userResponse.status);
           }
+        }
+      
         } catch (error) {
           console.error('Error fetching user details:', error);
         } finally {
@@ -34,8 +53,9 @@ const AdminOrderDetailsPage = () => {
       }
     };
 
-    fetchUserDetails();
+    fetchCustomerDetails();
   }, [orders]);
+  
   const renderCustomerInfo = () => {
     if (!orders.length) return null;
 
@@ -144,24 +164,16 @@ const AdminOrderDetailsPage = () => {
         [orderData, ...(Array.isArray(relatedData) ? relatedData : [])].forEach(order => {
             if (!seenRecordIds.has(order.recordId)) {
                 seenRecordIds.add(order.recordId);
-                uniqueOrders.push(order);
+                uniqueOrders.push({
+                  ...order,
+                  purchaseHistoryId: order.id 
+                });
             }
         });
 
         setOrders(uniqueOrders);
 
-        // Fetch guest details if it's a guest order
-        if (orderData.isGuest) {
-            try {
-                const guestResponse = await fetch(`http://localhost:8080/guest-orders/${orderData.id}`);
-                if (guestResponse.ok) {
-                    const guestData = await guestResponse.json();
-                    setGuestDetails(guestData);
-                }
-            } catch (error) {
-                console.error('Error fetching guest details:', error);
-            }
-        }
+      
 
         // Fetch record details
         const recordDetailsMap = {};

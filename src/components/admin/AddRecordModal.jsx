@@ -2,6 +2,7 @@ import React from 'react';
 import { Plus, X } from 'lucide-react';
 import RecordForm from './RecordForm';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const AddRecordModal = ({ 
   isOpen, 
@@ -81,6 +82,12 @@ const AddRecordModal = ({
           }
         });
         console.log('Record created:', response.data);
+        toast.success(
+          <div>
+            <p>"{record.title}" added successfully!</p>
+            <p className="text-sm mt-1">Subscribers will be notified about this new release.</p>
+          </div>
+        )
       }
 
       // Close modal and reset form after successful submission

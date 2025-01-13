@@ -16,7 +16,6 @@ const SidebarAdmin = () => {
   const menuItems = [
     { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
-    { path: '/admin/users', icon: Users, label: 'Users' },
     { path: '/admin/records', icon: Disc, label: 'Records' },
     { path: '/admin/settings', icon: Settings, label: 'Settings' },
   ];

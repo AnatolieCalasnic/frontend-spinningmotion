@@ -10,7 +10,6 @@ const AdminOrdersPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchError, setSearchError] = useState(null);
-  const [filterStatus, setFilterStatus] = useState('ALL');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,11 +29,7 @@ const AdminOrdersPage = () => {
           throw new Error('Search failed');
         }
         const data = await response.json();
-        // Applying status filter to search results if needed
-        const filteredData = filterStatus === 'ALL' 
-          ? data 
-          : data.filter(order => order?.status === filterStatus);
-        setOrders(filteredData || []);
+        setOrders(data || []);
       } catch (error) {
         console.error('Search error:', error);
         setSearchError('Failed to fetch search results');
@@ -47,22 +42,14 @@ const AdminOrdersPage = () => {
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
 
-  // Fetch all orders when filter changes
-  useEffect(() => {
-    if (searchTerm.length < 2) {
-      fetchOrders();
-    }
-  }, [filterStatus]);
+
 
   const fetchOrders = async () => {
     setLoading(true); 
     try {
       const response = await fetch('http://localhost:8080/purchase-history/all');
       const data = await response.json();
-      const filteredData = filterStatus === 'ALL' 
-        ? data 
-        : data.filter(order => order?.status === filterStatus);
-      setOrders(filteredData || []);
+      setOrders(data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
       setSearchError('Failed to fetch orders');
@@ -187,8 +174,6 @@ const AdminOrdersPage = () => {
       >
         {[
           { label: 'Total Orders', value: orders?.length, color: 'bg-red-600' },
-          { label: 'Completed', value: orders?.filter(o => o.status === 'COMPLETED').length, color: 'bg-blue-600' },
-          { label: 'Pending', value: orders?.filter(o => o.status === 'PENDING').length, color: 'bg-yellow-400' },
           { label: 'Total Revenue', value: `€${groupedOrders.reduce((acc, curr) => acc + curr.totalAmount, 0).toFixed(2)}`, color: 'bg-black' }
         ].map((stat, index) => (
           <motion.div
@@ -221,18 +206,6 @@ const AdminOrdersPage = () => {
             />
           </motion.div>
 
-          <motion.div variants={itemVariants} className="flex items-center space-x-4">
-            <Filter />
-            <select 
-              className="flex-1 py-3 px-4 border-4 border-black focus:border-red-600 outline-none"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="ALL">All Status</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="PENDING">Pending</option>
-            </select>
-          </motion.div>
 
           <motion.div variants={itemVariants} className="flex space-x-4">
             <button 

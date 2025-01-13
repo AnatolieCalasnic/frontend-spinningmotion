@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const ProgressBar = ({ value }) => {
   return (
@@ -12,9 +12,25 @@ const ProgressBar = ({ value }) => {
   );
 };
 
+const ViewToggleButton = ({ active, onClick, children }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+      active 
+        ? 'bg-green-500 text-black' 
+        : 'bg-gray-800 text-white hover:bg-gray-700'
+    }`}
+  >
+    {children}
+  </button>
+);
+
+
 const SalesChart = ({ data }) => {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [viewMode, setViewMode] = useState('daily');
+  const [processedData, setProcessedData] = useState([]);
 
   useEffect(() => {
     // Simulate loading stages
@@ -34,33 +50,102 @@ const SalesChart = ({ data }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Process data to daily format
-  const processedData = data?.reduce((acc, curr) => {
-    const date = new Date(curr.purchaseDate).toISOString().split('T')[0];
-    
-    if (!acc[date]) {
-      acc[date] = {
-        date,
-        sales: 0,
-        quantity: curr.quantity || 0,
-        revenue: curr.totalAmount || 0
-      };
-    } else {
-      acc[date].quantity += curr.quantity || 0;
-      acc[date].revenue += curr.totalAmount || 0;
-      acc[date].sales += 1;
-    }
-    
-    return acc;
-  }, {});
+  useEffect(() => {
+    if (!data) return;
 
-  const chartData = Object.values(processedData || {}).sort((a, b) => 
-    new Date(a.date) - new Date(b.date)
-  );
+    const aggregateData = () => {
+      // Create a Map to store grouped data
+      const groupedData = new Map();
+
+      // Process each sale record
+      data.forEach(record => {
+        const date = new Date(record.purchaseDate);
+        let groupKey;
+
+        switch (viewMode) {
+          case 'weekly': {
+            const day = date.getDay();
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(date);
+            monday.setDate(diff);
+            groupKey = monday.toISOString().split('T')[0];
+            break;
+          }
+          case 'yearly':
+            groupKey = date.getFullYear().toString();
+            break;
+          default: // daily
+            groupKey = date.toISOString().split('T')[0];
+        }
+
+        const existingGroup = groupedData.get(groupKey) || {
+          date: groupKey,
+          sales: 0,
+          quantity: 0,
+          revenue: 0
+        };
+
+        existingGroup.quantity += record.quantity || 0;
+        existingGroup.revenue += record.totalAmount || 0;
+        existingGroup.sales += 1;
+
+        groupedData.set(groupKey, existingGroup);
+      });
+
+      return Array.from(groupedData.values())
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+    };
+
+    setProcessedData(aggregateData());
+  }, [data, viewMode]);
+
+  const formatDate = (dateStr) => {
+    if (viewMode === 'yearly') {
+      return dateStr; 
+    }
+    const date = new Date(dateStr);
+      const formatOptions = {
+      daily: { month: 'short', day: 'numeric' },
+      weekly: { month: 'short', day: 'numeric' },
+      monthly: { month: 'short', year: 'numeric' }
+    };
+
+    if (viewMode === 'weekly') {
+      return date.toLocaleDateString('en-US', formatOptions.weekly);
+    }
+
+    return date.toLocaleDateString('en-US', formatOptions[viewMode]);
+  };
 
   return (
-    <div className="w-full bg-black p-6 rounded-lg h-[300px]">
-    <div className="h-full w-full relative">
+    <div className="w-full bg-black p-6 rounded-lg space-y-4">
+    <div className="flex gap-2 mb-4">
+     <ViewToggleButton 
+     active={viewMode === 'daily'} 
+     onClick={() => setViewMode('daily')}
+   >
+     Daily
+   </ViewToggleButton>
+   <ViewToggleButton 
+     active={viewMode === 'weekly'} 
+     onClick={() => setViewMode('weekly')}
+   >
+     Weekly
+   </ViewToggleButton>
+   <ViewToggleButton 
+     active={viewMode === 'monthly'} 
+     onClick={() => setViewMode('monthly')}
+   >
+     Monthly
+   </ViewToggleButton>
+    <ViewToggleButton 
+     active={viewMode === 'yearly'} 
+     onClick={() => setViewMode('yearly')}
+      >
+      Yearly
+    </ViewToggleButton>
+ </div>
+  <div className="h-64 w-full relative">
       {loading ? (
           <div className="absolute inset-0 flex flex-col justify-center items-center space-y-4 bg-black">
           <div className="w-full max-w-md">
@@ -69,61 +154,53 @@ const SalesChart = ({ data }) => {
           <p className="text-white">Loading chart data...</p>
         </div>
       ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid
-                vertical={false}
-                stroke="#333"
-                opacity={0.1}
-              />
+          <ResponsiveContainer>
+          <LineChart
+          data={processedData}
+          margin={{ top: 10, right: 30, left: 10, bottom: 30 }}
+        >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+
               <XAxis
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: '#888' }}
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  });
-                }}
+                tickFormatter={formatDate}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
+               <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#666', fontSize: 12 }}
+                width={40}
               />
               <Tooltip
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
-                    const date = new Date(label);
                     return (
-                      <div className="bg-white text-black p-2 rounded-lg text-sm shadow-lg border border-gray-200">
-                        <p className="font-bold">
-                          {date.toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </p>
-                        <p>Sales: {payload[0].value}</p>
-                        <p>Revenue: €{payload[0].payload.revenue.toFixed(2)}</p>
+                      <div className="bg-white shadow-lg rounded-lg border p-3 text-sm">
+                        <p className="font-semibold mb-1">{formatDate(label)}</p>
+                        <p className="text-gray-600">Sales: {payload[0].value}</p>
+                        <p className="text-gray-600">Revenue: €{payload[0].payload.revenue.toFixed(2)}</p>
+                        <p className="text-gray-600">Items: {payload[0].payload.quantity}</p>
                       </div>
                     );
                   }
                   return null;
                 }}
               />
-              <Bar
+              <Line
+                type="monotone"
                 dataKey="sales"
-                fill="#4ade80"
-                radius={[4, 4, 0, 0]}
+                stroke="#4F46E5"
+                strokeWidth={2}
+                dot={{ fill: '#4F46E5', r: 4 }}
+                activeDot={{ r: 6, fill: '#4F46E5', stroke: '#fff', strokeWidth: 2 }}
               />
-            </BarChart>
+            </LineChart>
           </ResponsiveContainer>
       )}
       </div>

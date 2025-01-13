@@ -28,9 +28,12 @@ import UserOrdersPage from './pages/user_profile/UserOrdersPage';
 import UserOrderDetailsPage from './pages/user_profile/UserOrderDetailsPage';
 import CouponPage from './pages/user_profile/CouponPage';
 import ArtistCollection from './pages/ArtistCollection';
+import AdminSettings from './pages/AdminSettings';
+import FAQ from './pages/footer-pages/FAQ';
+import ShippingInfo from './pages/footer-pages/ShippingInfo';
+import ReturnsExchanges from './pages/footer-pages/ReturnsExchanges';
 const PublicLayout = ({ children }) => {
   const { user } = useAuth();
-  
   if (user?.isAdmin) {
     return <Navigate to="/admin/dashboard" replace />;
   }
@@ -76,6 +79,7 @@ function App() {
                     <Route path="orders" element={<AdminOrdersPage />} />
                     <Route path="orders/:id" element={<AdminOrderDetailsPage />} />
                     <Route path="/" element={<Navigate to="dashboard" replace />} />
+                    <Route path="settings" element={<AdminSettings />} />
                   </Routes>
                 </AdminLayout>
               </ProtectedRoute>
@@ -128,6 +132,9 @@ function App() {
                   <Route path="new-releases" element={<NewReleasePage />} />
                   <Route path="new-releases/:genre" element={<NewReleasePage />} />
                   <Route path="artist/:artistName" element={<ArtistCollection />} />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/shipping" element={<ShippingInfo />} />
+                  <Route path="/returns" element={<ReturnsExchanges />} />
                 </Routes>
               </PublicLayout>
             }
