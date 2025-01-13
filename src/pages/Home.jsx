@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Play, Pause, Loader, Facebook, Instagram, Twitter, Music} from 'lucide-react';
+import { Loader, ArrowDown, Facebook, Instagram, Twitter, Music} from 'lucide-react';
 import { useAuthRedirect } from '../hooks/useAuthRedirect';
 import ProductCard from '../components/ProductCard';
 import FeaturedArtistCard from '../components/FeaturedArtistCard';
+import NewsletterSubscription from '../components/NewsletterSubscription';
+import AboutSection from '../components/site_navigation/AboutSection';
+import MusicPlayer from '../components/site_navigation/MusicPlayer';
 
 export default function Home() {
   useAuthRedirect();
@@ -77,16 +80,8 @@ export default function Home() {
       <main className="flex-grow">
         <div className="grid grid-cols-12 gap-4 p-4">
           {/* Featured Album */}
-          <div className="col-span-12 bg-red-600 p-6 flex items-center">
-            <div className="w-32 h-32 bg-white rounded-full flex-shrink-0 flex items-center justify-center mr-6">
-              <button onClick={() => setIsPlaying(!isPlaying)} className="text-red-600">
-                {isPlaying ? <Pause className="h-12 w-12" /> : <Play className="h-12 w-12" />}
-              </button>
-            </div>
-            <div>
-              <h2 className="text-white text-3xl font-bold mb-2">FEATURED ALBUM</h2>
-              <p className="text-white">Experience our top pick of the week</p>
-            </div>
+          <div className="col-span-12 p-4">
+          <MusicPlayer />
           </div>
 
           {/* New Releases */}
@@ -137,9 +132,8 @@ export default function Home() {
           </div>
 
           {/* About Us */}
-          <div className="col-span-4 bg-white border-4 border-black p-6">
-            <h2 className="text-black text-2xl font-bold mb-4">ABOUT US</h2>
-            <p className="text-black">BLAH BLAH BLAH, BEST RECORDS... BLAH BLAH BLAH.</p>
+          <div className="col-span-4">
+          <AboutSection />
           </div>
 
           {/* Featured Artists */}
@@ -192,11 +186,7 @@ export default function Home() {
 
           {/* Newsletter Signup */}
           <div className="col-span-12 bg-white border-4 border-black p-6">
-            <h2 className="text-black text-2xl font-bold mb-4">JOIN OUR MAILING LIST</h2>
-            <div className="flex">
-              <input type="email" placeholder="Your email" className="flex-grow p-2 border-2 border-black" />
-              <button className="bg-black text-white px-6 py-2 uppercase font-bold">Subscribe</button>
-            </div>
+            <NewsletterSubscription />
           </div>
         </div>
       </main>

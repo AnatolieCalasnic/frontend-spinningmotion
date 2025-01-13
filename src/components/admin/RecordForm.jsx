@@ -3,7 +3,7 @@ const RecordForm = ({ record, index, isEdit, onChange, genres }) => {
   const handleYearChange = (e) => {
     const value = e.target.value;
     if (value === '' || /^\d{0,4}$/.test(value)) {
-      onChange(index, 'releaseYear', value === '' ? null : parseInt(value, 10));
+      onChange(index, 'year', value === '' ? null : parseInt(value, 10));
     }
   };
   
@@ -109,7 +109,7 @@ const RecordForm = ({ record, index, isEdit, onChange, genres }) => {
           <label className="block font-bold mb-2">Release Year</label>
           <input
             type="text"
-            value={record.releaseYear || ''}
+            value={record.year || ''}
             onChange={handleYearChange}
             maxLength="4"
             className="w-full border-2 border-black p-2"

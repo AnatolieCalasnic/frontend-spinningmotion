@@ -95,7 +95,7 @@ const AdminRecords = () => {
         artist: selectedRecord.artist,
         genreId: parseInt(selectedRecord.genreId),
         price: parseFloat(selectedRecord.price),
-        releaseYear: selectedRecord.releaseYear ? parseInt(selectedRecord.releaseYear) : null,
+        year: selectedRecord.year ? parseInt(selectedRecord.year) : null,
         condition: selectedRecord.condition,
         quantity: parseInt(selectedRecord.quantity) || 0,
         imagesToDelete: selectedRecord.imagesToDelete || []
