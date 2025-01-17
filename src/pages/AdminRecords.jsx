@@ -88,8 +88,9 @@ const AdminRecords = () => {
   const handleEditRecord = async () => {
     try {
       const formData = new FormData();
-      
-      // Remove undefined or null values from recordData
+      console.log('Selected Record before processing:', selectedRecord);
+
+      // removing undefined or null values from recordData
       const recordData = {
         title: selectedRecord.title,
         artist: selectedRecord.artist,
@@ -100,31 +101,38 @@ const AdminRecords = () => {
         quantity: parseInt(selectedRecord.quantity) || 0,
         imagesToDelete: selectedRecord.imagesToDelete || []
       };
-  
-      // Clean up recordData by removing null/undefined values
+      console.log('Record data being sent:', recordData);
+
+      // cleaning up recordData by removing null/undefined values
       Object.keys(recordData).forEach(key => {
         if (recordData[key] === null || recordData[key] === undefined) {
           delete recordData[key];
         }
       });
       
-      // Create a blob from the cleaned record data
+      // creating a blob from the cleaned record data
       const recordBlob = new Blob([JSON.stringify(recordData)], {
         type: 'application/json'
       });
       formData.append('record', recordBlob);
-  
-      // Handle new images if they exist
-      if (selectedRecord.newImages && selectedRecord.newImages.length > 0) {
-        selectedRecord.newImages.forEach(file => {
-          // Check file size before appending
-          if (file.size <= 5000000) { // 5MB limit
-            formData.append('images', file);
-          }
+      // Debug log for images
+      if (selectedRecord.newImages?.length > 0) {
+        console.log('New images to upload:', selectedRecord.newImages);
+        selectedRecord.newImages.forEach((file, index) => {
+          console.log(`Image ${index}:`, {
+            name: file.name,
+            type: file.type,
+            size: file.size
+          });
+          formData.append('images', file);
         });
       }
-  
-      console.log('Sending formData:', formData); // Debug log
+
+      // Debug log the final FormData
+      for (let pair of formData.entries()) {
+        console.log('FormData entry:', pair[0], pair[1]);
+      }
+
   
       const response = await axios.put(
         `http://localhost:8080/records/${selectedRecord.id}`, 
@@ -133,7 +141,7 @@ const AdminRecords = () => {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
-          // Add timeout and max size settings
+          // timeout and max size settings
           timeout: 30000, // 30 seconds
           maxContentLength: 10485760, // 10MB
           maxBodyLength: 10485760 // 10MB
@@ -147,6 +155,8 @@ const AdminRecords = () => {
       );
       setIsEditModalOpen(false);
       setSelectedRecord(null);
+      console.log('Server response:', response);
+
     } catch (err) {
       console.error('Error updating record:', err);
       if (err.response?.status === 413) {

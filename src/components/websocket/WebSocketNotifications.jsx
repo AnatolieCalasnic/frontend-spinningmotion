@@ -49,9 +49,17 @@ const WebSocketNotifications = () => {
           detail: { count: activeUsers } 
         }));
       });
+      stompClient.subscribe('/topic/inventory', (message) => {
+        const inventoryData = JSON.parse(message.body);
+        console.log('Received inventory update:', inventoryData); 
+        window.dispatchEvent(new CustomEvent('inventoryUpdate', {
+          detail: { inventory: inventoryData }
+        }));
+      });
 
       // Request initial active users count
       stompClient.send("/app/request-active-users", {}, "");
+      stompClient.send("/app/request-inventory", {}, "");
     }, (error) => {
       console.error('WebSocket connection error:', error);
       reconnectTimeout = setTimeout(connect, 5000);

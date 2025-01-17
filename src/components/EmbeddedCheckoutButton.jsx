@@ -48,13 +48,14 @@ const EmbeddedCheckoutButton = ({ items, disabled = false, quickBuy = false, app
             quantity: item.quantity
           })),
           metadata: {
-            userId: user?.id || '', // Send user ID if logged in
-            isGuest: !user, // true if no user is logged in
+            userId: user?.id ? String(user.id) : null, // Send user ID if logged in
+            isGuest:  !user || !user.id, // true if no user is logged in
             couponCode: appliedCoupon?.couponCode
           },
           coupon: appliedCoupon ? {
             code: appliedCoupon.couponCode,
-            discountPercentage: appliedCoupon.discountPercentage
+            discountPercentage: appliedCoupon.discountPercentage,
+            isValid: await validateCouponBeforeCheckout(appliedCoupon.couponCode)
           } : null,
             guestDetails: !user ? {
               fname: guestDetails.fname,
@@ -88,6 +89,15 @@ const EmbeddedCheckoutButton = ({ items, disabled = false, quickBuy = false, app
     }
   }, [items, user, guestDetails, quickBuy, appliedCoupon]);
 
+  const validateCouponBeforeCheckout = async (couponCode) => {
+    try {
+      const response = await fetch(`http://localhost:8080/coupons/validate/${couponCode}`);
+      return response.ok;
+    } catch (error) {
+      console.error("Coupon validation failed", error);
+      return false;
+    }
+  };
   const calculateTotal = () => {
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     if (appliedCoupon) {

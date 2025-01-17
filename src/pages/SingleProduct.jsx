@@ -5,6 +5,7 @@ import axios from 'axios';
 import EmbeddedCheckoutButton from '../components/EmbeddedCheckoutButton';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { UserProductNotification } from '../components/notifications/UserProductNotification';
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,7 +16,6 @@ const ProductDetail = () => {
   const [activeImage, setActiveImage] = useState(0);
   const [images, setImages] = useState([]);
 
- // In your fetchProduct function, after getting the response:
 useEffect(() => {
   const fetchProductAndImages = async () => {
     try {
@@ -56,7 +56,7 @@ useEffect(() => {
 
 fetchProductAndImages();
 
-// Cleanup image URLs
+// cleanup image URLs
 return () => {
   images.forEach(image => {
     if (image?.url) {
@@ -121,13 +121,10 @@ const addToBasket = async () => {
       0
     );
 
-    // Log for debugging
     console.log('Updated basket before saving:', currentBasket);
 
-    // Save to localStorage
     localStorage.setItem('guestBasket', JSON.stringify(currentBasket));
     
-    // Log for verification
     const verifyBasket = localStorage.getItem('guestBasket');
     console.log('Verified basket in localStorage:', JSON.parse(verifyBasket));
     
@@ -139,15 +136,19 @@ const addToBasket = async () => {
 const getQuickBuyItem = () => {
   if (!product) return null;
   
-  return [{
+  const item = {
     recordId: parseInt(product.id),
     title: product.title,
     artist: product.artist,
     price: parseFloat(product.price),
-    quantity: quantity,
-    availableStock: product.quantity,
-    condition: product.condition
-  }];
+    quantity: parseInt(quantity),
+    availableStock: parseInt(product.quantity),
+    condition: product.condition,
+    year: product.year
+  };
+  console.log('Quick buy item:', item);
+
+  return [item];
 };
 
 
@@ -157,7 +158,20 @@ const getQuickBuyItem = () => {
       setQuantity(newQuantity);
     }
   };
-
+  const handleInventoryUpdate = (inventory) => {
+    // upd product state when inventory changes
+    if (product && product.id === inventory.recordId) {
+      setProduct(prev => ({
+        ...prev,
+        quantity: inventory.quantity
+      }));
+      
+      // if current selected quantity is more than new stock, adjust it
+      if (quantity > inventory.quantity) {
+        setQuantity(inventory.quantity);
+      }
+    }
+  };
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
@@ -168,6 +182,7 @@ const getQuickBuyItem = () => {
 
   return (
     <div className="max-w-7xl mx-auto bg-white p-8">
+      <UserProductNotification productId={id} onInventoryUpdate={handleInventoryUpdate} />
       <div className="grid grid-cols-12 gap-8">
         {/* Left Column - Images */}
         <div className="col-span-7 space-y-8">
@@ -233,7 +248,7 @@ const getQuickBuyItem = () => {
                         <span className="font-bold">Format:</span> Vinyl
                     </div>
                     <div className="p-4 border-b-2 border-black bg-yellow-600">
-                        <span className="font-bold">Release Year:</span> {product.releaseYear}
+                        <span className="font-bold">Release Year:</span> {product.year}
                     </div>
                     <div className="p-4 border-r-2 border-b-2 border-black bg-brown-400">
                         <span className="font-bold">Condition:</span> {product.condition}

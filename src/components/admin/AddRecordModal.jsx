@@ -12,6 +12,72 @@ const AddRecordModal = ({
   genres 
 }) => {
   if (!isOpen) return null;
+  const validateRecord = (record) => {
+    const errors = {};
+    
+    // Title validation (1-255 characters)
+    if (!record.title?.trim()) {
+      errors.title = "Title is required";
+    } else if (record.title.length < 1 || record.title.length > 255) {
+      errors.title = "Title must be between 1 and 255 characters";
+    }
+
+    // Artist validation (1-255 characters)
+    if (!record.artist?.trim()) {
+      errors.artist = "Artist name is required";
+    } else if (record.artist.length < 1 || record.artist.length > 255) {
+      errors.artist = "Artist name must be between 1 and 255 characters";
+    }
+
+    // Genre validation
+    if (!record.genreId) {
+      errors.genreId = "Genre is required";
+    }
+
+    // Price validation (minimum €0.01)
+    if (!record.price) {
+      errors.price = "Price is required";
+    } else if (parseFloat(record.price) < 0.01) {
+      errors.price = "Price must be at least €0.01";
+    }
+
+    if (!record.year) {
+      errors.year = "Year is required";
+    } else {
+      const yearNum = parseInt(record.year, 10);
+      if (isNaN(yearNum) || yearNum < 1900) {
+        errors.year = "Release year must be 1900 or later";
+      }
+    }
+
+    // Condition validation (matching backend)
+    if (!record.condition) {
+      errors.condition = "Condition is required";
+    } else if (!['Mint', 'Near Mint', 'Very Good', 'Good'].includes(record.condition)) {
+      errors.condition = "Condition must be one of: Mint, Near Mint, Very Good, Good";
+    }
+
+    // Quantity validation (minimum 1)
+    if (record.quantity === undefined || record.quantity === '') {
+      errors.quantity = "Quantity is required";
+    } else if (parseInt(record.quantity, 10) < 1) {
+      errors.quantity = "Quantity must be at least 1";
+    }
+
+    // Image validation
+    if (record.newImages?.length > 0) {
+      for (const file of record.newImages) {
+        if (!file.type.startsWith('image/')) {
+          errors.images = `File "${file.name}" is not an image`;
+        } else if (file.size > 5 * 1024 * 1024) { // 5MB limit
+          errors.images = `File "${file.name}" exceeds 5MB size limit`;
+        }
+      }
+    }
+
+    return errors;
+  };
+
 
   const handleInputChange = (index, field, value) => {
     const updated = [...newRecords];
@@ -21,7 +87,7 @@ const AddRecordModal = ({
         [field]: value === null ? null : parseInt(value, 10)
       };
     } else if (field === 'newImages') {
-      // Handle new images being added
+      // handling new images being added
       updated[index] = {
         ...updated[index],
         newImages: value // This will be an array of files
@@ -34,70 +100,71 @@ const AddRecordModal = ({
 
   const handleAddRecord = async () => {
     try {
-      // Validate records before submission
-      for (const record of newRecords) {
-        if (!record.title || !record.artist || !record.genreId || !record.price || !record.condition) {
-          alert('Please fill in all required fields');
-          return;
-        }
+      const allErrors = newRecords.map(validateRecord);
+      const hasErrors = allErrors.some(errors => Object.keys(errors).length > 0);
+      
+      if (hasErrors) {
+        const errorMessages = allErrors
+          .map((errors, index) => {
+            const errorList = Object.values(errors);
+            return errorList.length > 0 
+              ? `Record ${index + 1}: ${errorList.join(', ')}` 
+              : null;
+          })
+          .filter(Boolean)
+          .join('\n');
+          
+        toast.error(errorMessages);
+        return;
       }
 
-      // Process each record
+      // Processing each record
       for (const record of newRecords) {
         const formData = new FormData();
         
-        // Add the record data as a JSON string
         const recordData = {
-          title: record.title,
-          artist: record.artist,
+          title: record.title.trim(),
+          artist: record.artist.trim(),
           genreId: parseInt(record.genreId),
           price: parseFloat(record.price),
-          year: record.releaseYear ? parseInt(record.releaseYear) : null,
+          year: record.year ? parseInt(record.year) : null,
           condition: record.condition,
-          quantity: parseInt(record.quantity) || 0
+          quantity: parseInt(record.quantity)
         };
         
-        // Add the record data as a Blob
         const recordBlob = new Blob([JSON.stringify(recordData)], {
           type: 'application/json'
         });
         formData.append('record', recordBlob);
 
-        // Add images if they exist
-        if (record.newImages && record.newImages.length > 0) {
+        if (record.newImages?.length > 0) {
           record.newImages.forEach((file) => {
             formData.append('images', file);
           });
         }
 
-        // Log the FormData contents for debugging
-        for (let pair of formData.entries()) {
-          console.log(pair[0], pair[1]);
-        }
-
-        // Send the request
         const response = await axios.post('http://localhost:8080/records', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           }
         });
-        console.log('Record created:', response.data);
+
         toast.success(
           <div>
             <p>"{record.title}" added successfully!</p>
             <p className="text-sm mt-1">Subscribers will be notified about this new release.</p>
           </div>
-        )
+        );
       }
 
-      // Close modal and reset form after successful submission
+      // Reseting form after successful submission
       onClose();
       setNewRecords([{
         title: '',
         artist: '',
         genreId: '',
         price: '',
-        releaseYear: '',
+        year: '',
         condition: '',
         quantity: '',
         newImages: []
@@ -105,10 +172,9 @@ const AddRecordModal = ({
       
     } catch (error) {
       console.error('Error creating records:', error);
-      alert('Failed to create records. Please try again.');
+      toast.error('Failed to create records. Please try again.');
     }
   };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">

@@ -109,7 +109,7 @@ const BasketPage = () => {
     <div className="max-w-7xl mx-auto p-8">
       <div className="grid grid-cols-12 gap-8">
         {/* Main Content - Left Side */}
-        <div className="col-span-8">
+        <div className="col-span-12 lg:col-span-8">
           <div className="bg-white border-8 border-black">
             {/* Header */}
             <div className="bg-red-600 p-6 text-white flex justify-between items-center">
@@ -207,7 +207,7 @@ const BasketPage = () => {
         </div>
 
         {/* Summary Panel - Right Side */}
-        <div className="col-span-4">
+        <div className="col-span-12 lg:col-span-4">
           <div className="bg-white border-8 border-black sticky top-8">
             <div className="bg-black text-white p-6">
               <h2 className="text-2xl font-bold mb-6">Order Summary</h2>

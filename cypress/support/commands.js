@@ -42,3 +42,11 @@ Cypress.Commands.add('login', (email, password) => {
       return window.localStorage.getItem(key);
     });
   });
+  Cypress.Commands.add('getWithinIframe', (selector) => {
+    return cy
+      .get('iframe[name^="__privateStripeFrame"]')
+      .its('0.contentDocument.body')
+      .should('not.be.empty')
+      .then(cy.wrap)
+      .find(selector);
+  });

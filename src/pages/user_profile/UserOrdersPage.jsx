@@ -140,7 +140,7 @@ const UserOrdersPage = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8"
       >
         {[
           { 
@@ -208,57 +208,91 @@ const UserOrdersPage = () => {
         animate="visible"
         className="bg-white border-8 border-black"
       >
-        <table className="w-full">
-          <thead>
-            <tr className="bg-black text-white">
-              <th className="p-4 text-left">Order ID</th>
-              <th className="p-4 text-left">Date</th>
-              <th className="p-4 text-left">Amount</th>
-              <th className="p-4 text-left">Status</th>
-              <th className="p-4 text-left">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="5" className="text-center py-8">Loading orders...</td>
+        <div className="hidden sm:block">
+          <table className="w-full min-w-[800px]">
+            <thead>
+              <tr className="bg-black text-white">
+                <th className="p-4 text-left">Order ID</th>
+                <th className="p-4 text-left">Date</th>
+                <th className="p-4 text-left">Amount</th>
+                <th className="p-4 text-left">Status</th>
+                <th className="p-4 text-left">Details</th>
               </tr>
-            ) : filteredOrders.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="text-center py-8">No orders found</td>
-              </tr>
-            ) : (
-              filteredOrders.map((order) => (
-                <motion.tr
-                  key={order.id}
-                  variants={itemVariants}
-                  className="border-b-4 border-black hover:bg-yellow-50"
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="text-center py-8">Loading orders...</td>
+                </tr>
+              ) : filteredOrders.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center py-8">No orders found</td>
+                </tr>
+              ) : (
+                filteredOrders.map((order) => (
+                  <motion.tr
+                    key={order.id}
+                    variants={itemVariants}
+                    className="border-b-4 border-black hover:bg-yellow-50"
+                  >
+                    <td className="p-4 font-bold">#{order.id}</td>
+                    <td className="p-4">{new Date(order.purchaseDate).toLocaleDateString()}</td>
+                    <td className="p-4">€{order.totalAmount.toFixed(2)}</td>
+                    <td className="p-4">
+                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                        order.status === 'COMPLETED' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-yellow-400 text-black'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <button 
+                        className="p-2 hover:bg-gray-100 rounded-full"
+                        onClick={() => navigate(`/my-orders/${order.id}`)}
+                      >
+                        <Eye className="text-gray-600" />
+                      </button>
+                    </td>
+                  </motion.tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile view */}
+        <div className="block sm:hidden">
+          {loading ? (
+            <p>Loading orders...</p>
+          ) : filteredOrders.length === 0 ? (
+            <p>No orders found</p>
+          ) : (
+            filteredOrders.map((order) => (
+              <div key={order.id} className="border-2 border-black p-4 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-bold">Order ID: #{order.id}</span>
+                  <span className={`px-3 py-1 text-sm font-bold ${
+                    order.status === 'COMPLETED' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-yellow-400 text-black'
+                  }`}>
+                    {order.status}
+                  </span>
+                </div>
+                <p>Date: {new Date(order.purchaseDate).toLocaleDateString()}</p>
+                <p>Amount: €{order.totalAmount.toFixed(2)}</p>
+                <button 
+                  className="p-2 mt-2 bg-black text-white hover:bg-gray-800 "
+                  onClick={() => navigate(`/my-orders/${order.id}`)}
                 >
-                  <td className="p-4 font-bold">#{order.id}</td>
-                  <td className="p-4">{new Date(order.purchaseDate).toLocaleDateString()}</td>
-                  <td className="p-4">€{order.totalAmount.toFixed(2)}</td>
-                  <td className="p-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                      order.status === 'COMPLETED' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-yellow-400 text-black'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <button 
-                      className="p-2 hover:bg-gray-100 rounded-full"
-                      onClick={() => navigate(`/my-orders/${order.id}`)}
-                    >
-                      <Eye className="text-gray-600" />
-                    </button>
-                  </td>
-                </motion.tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  <span>Details</span>
+                </button>
+              </div>
+            ))
+          )}
+        </div>
       </motion.div>
     </div>
   );

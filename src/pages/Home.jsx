@@ -68,7 +68,7 @@ export default function Home() {
   const loadLatestReleases = async () => {
     try {
       const response = await axios.get('http://localhost:8080/records/new-releases');
-      setLatestReleases(response.data.slice(0, 3)); // Get only the first 3 records
+      setLatestReleases(response.data.slice(0, 6)); // Get only the first 6 records
     } catch (error) {
       console.error("Error loading latest releases:", error);
       setLatestReleases([]);
@@ -80,13 +80,13 @@ export default function Home() {
       <main className="flex-grow">
         <div className="grid grid-cols-12 gap-4 p-4">
           {/* Featured Album */}
-          <div className="col-span-12 p-4">
+          <div className="col-span-12">
           <MusicPlayer />
           </div>
 
           {/* New Releases */}
-          <div className="col-span-8 bg-blue-600 p-6">
-            <h2 className="text-white text-2xl font-bold mb-4">NEW RELEASES</h2>
+          <div className="col-span-12 lg:col-span-8 bg-blue-600 p-6 text-lg">
+            <h2 className="text-white  text-xl lg:text-2xl font-bold mb-4">NEW RELEASES</h2>
             <Link 
                 to="/new-releases" 
                 className="text-white hover:underline"
@@ -98,7 +98,7 @@ export default function Home() {
                 <Loader className="animate-spin text-white h-8 w-8" />
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-5">
                   {latestReleases.length > 0 ? (
                   latestReleases.map((record) => (
                     <ProductCard key={record.id} product={record} />
@@ -111,10 +111,10 @@ export default function Home() {
           </div>
 
           {/* Genres */}
-          <div className="col-span-4 bg-yellow-400 p-6">
-            <h2 className="text-black text-2xl font-bold mb-4">GENRES</h2>
+          <div className="col-span-12 lg:col-span-4 bg-yellow-400 p-6">
+            <h2 className="text-black text-xl lg:text-2xl font-bold mb-4">GENRES</h2>
             {genres.length > 0 ? (
-              <ul className="grid grid-cols-2 gap-2">
+              <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2">
                 {genres.map((genre, index) => (
                   <li key={index}>
                     <Link 
@@ -132,14 +132,14 @@ export default function Home() {
           </div>
 
           {/* About Us */}
-          <div className="col-span-4">
+          <div className="col-span-12 lg:col-span-4">
           <AboutSection />
           </div>
 
           {/* Featured Artists */}
-          <div className="col-span-8 bg-black text-white p-6">
-            <h2 className="text-2xl font-bold mb-4">FEATURED ARTISTS</h2>
-            <div className="grid grid-cols-3 gap-4">
+          <div className="col-span-12 lg:col-span-8 bg-black text-white p-6">
+            <h2 className="text-xl lg:text-2xl font-bold mb-4">FEATURED ARTISTS</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {isLoading ? (
                 <div className="col-span-3 flex justify-center items-center h-32">
                   <Loader className="animate-spin text-white h-8 w-8" />
@@ -154,14 +154,14 @@ export default function Home() {
                     <FeaturedArtistCard artist={artist} />
                     
                     {/* Artist Info */}
-                    <div className="mb-4">
+                    <div className="mb-">
                       <div className="flex justify-between items-start">
                         <h3 className="font-bold text-xl">{artist.artist}</h3>
                         <span className="text-sm font-bold text-red-600">
                           #{index + 1}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                         <div className="bg-gray-100 p-2 text-center">
                           <span className="block font-bold text-red-600">
                             {artist.title || 'Top Album'}

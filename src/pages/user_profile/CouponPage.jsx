@@ -69,7 +69,7 @@ const CouponPage = () => {
                     <p className="font-bold text-2xl">{coupon.discountPercentage}% OFF</p>
                     <p className="text-gray-600 flex items-center">
                       <Calendar className="mr-2" size={16} />
-                      Valid until: {new Date(coupon.validUntil).toLocaleDateString()}
+                      Valid until: {new Date(coupon.validUntil).toLocaleDateString('en-GB')}
                     </p>
                   </div>
                 </div>

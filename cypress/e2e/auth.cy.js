@@ -62,7 +62,7 @@ describe('Authentication', () => {
     it('should show validation errors for invalid login inputs', () => {
       openAuthModalDesktop();
       cy.get('form').should('be.visible');
-      cy.get('button[type="submit"]').click();
+      cy.get('form button[type="submit"]').first().click();
       
       cy.contains('Please enter a valid email address').should('be.visible');
       cy.contains('Password must be at least 6 characters long').should('be.visible');
@@ -80,7 +80,7 @@ describe('Authentication', () => {
 
       openAuthModalDesktop();
       fillLoginForm('test@example.com', 'password123');
-      cy.get('button[type="submit"]').click();
+      cy.get('form button[type="submit"]').first().click();
       
       cy.wait('@loginRequest');
       cy.get('.fixed.inset-0').should('not.exist');
@@ -131,7 +131,7 @@ describe('Authentication', () => {
       }).as('loginAfterRegister');
 
       fillRegistrationForm(newUser);
-      cy.get('button[type="submit"]').click();
+      cy.get('form button[type="submit"]').first().click();
       
       cy.wait('@registerRequest');
       cy.wait('@loginAfterRegister');
