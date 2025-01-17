@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Filter, ArrowUpDown, Eye, Download, Printer } from 'lucide-react';
+import { Search, Eye, Download, Printer } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -11,7 +11,16 @@ const AdminOrdersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchError, setSearchError] = useState(null);
   const navigate = useNavigate();
-
+  const fetchUserDetails = async (userId) => {
+    try {
+      const response = await fetch(`http://localhost:8080/user/${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch user details');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      return null;
+    }
+  };
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -29,7 +38,16 @@ const AdminOrdersPage = () => {
           throw new Error('Search failed');
         }
         const data = await response.json();
-        setOrders(data || []);
+        const ordersWithUserDetails = await Promise.all(
+          data.map(async (order) => {
+            if (order.userId) {
+              const userDetails = await fetchUserDetails(order.userId);
+              return { ...order, userDetails };
+            }
+            return order;
+          })
+        );
+        setOrders(ordersWithUserDetails || []);
       } catch (error) {
         console.error('Search error:', error);
         setSearchError('Failed to fetch search results');
@@ -49,7 +67,19 @@ const AdminOrdersPage = () => {
     try {
       const response = await fetch('http://localhost:8080/purchase-history/all');
       const data = await response.json();
-      setOrders(data || []);
+      console.log('Raw order data:', data); // Debug log
+      const ordersWithUserDetails = await Promise.all(
+        data.map(async (order) => {
+          if (order.userId) {
+            const userDetails = await fetchUserDetails(order.userId);
+            return { ...order, userDetails };
+          }
+          return order;
+        })
+      );
+      console.log('Orders with user details:', ordersWithUserDetails); // Debug log
+
+      setOrders(ordersWithUserDetails || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
       setSearchError('Failed to fetch orders');
@@ -86,6 +116,7 @@ const AdminOrdersPage = () => {
           id: order.id, 
           groupId: `ORDER-${purchaseTime}`, 
           userId: order.userId,
+          userDetails: order.userDetails,
           isGuest: order.isGuest, 
           status: order.status,
           purchaseDate: order.purchaseDate,
@@ -118,23 +149,22 @@ const AdminOrdersPage = () => {
   const exportToPDF = () => {
     const doc = new jsPDF();
     
-    // Add title
     doc.setFontSize(20);
     doc.text('Orders Report', 14, 22);
     doc.setFontSize(12);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
   
-    // Create table data
-    const tableColumn = ["Order ID", "User ID", "Amount", "Date", "Status"];
+    const tableColumn = ["Order ID", "User Information", "Amount", "Date", "Status"];
     const tableRows = groupOrdersByPurchaseTime(orders).map(order => [
       order.id,
-      order.userId,
+      order.userDetails ? 
+        `${order.userDetails.fname} ${order.userDetails.lname} (ID: ${order.userId})` : 
+        'Guest User',
       `€${order.totalAmount.toFixed(2)}`,
       new Date(order.purchaseDate).toLocaleDateString(),
       order.status
     ]);
   
-    // Create the table
     doc.autoTable({
       head: [tableColumn],
       body: tableRows,
@@ -143,7 +173,6 @@ const AdminOrdersPage = () => {
       headStyles: { fillColor: [0, 0, 0] }
     });
   
-    // Save PDF
     doc.save('orders-report.pdf');
   };
   
@@ -237,7 +266,7 @@ const AdminOrdersPage = () => {
           <thead>
             <tr className="bg-black text-white">
               <th className="p-4 text-left">Order ID</th>
-              <th className="p-4 text-left">User ID</th>
+              <th className="p-4 text-left">User Information</th>
               <th className="p-4 text-left">Amount</th>
               <th className="p-4 text-left">Date</th>
               <th className="p-4 text-left">Status</th>
@@ -258,7 +287,21 @@ const AdminOrdersPage = () => {
                   onClick={() => navigate(`/admin/orders/${order.id}`)}
                 >
                   <td className="p-4 font-bold">#{order.id}</td>
-                  <td className="p-4">  {order.userId ? order.userId : "Guest User"}</td>
+                  <td className="p-4">
+                    {order.userDetails ? (
+                      <div>
+                        <div className="font-medium">{order.userDetails.name}</div>
+                        <div className="text-lg text-black">
+                          <div>ID: {order.userId}</div>
+                          {order.userDetails.email && (
+                            <div className="text-gray-400">{order.userDetails.email}</div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      "Guest User"
+                    )}
+                  </td>
                   <td className="p-4">€{order.totalAmount.toFixed(2)}</td>
                   <td className="p-4">{new Date(order.purchaseDate).toLocaleDateString()}</td>
                   <td className="p-4">

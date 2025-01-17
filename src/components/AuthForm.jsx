@@ -242,7 +242,7 @@ const AuthForm = ({ onClose }) => {
                   className="w-full p-3 border-4 border-black focus:outline-none focus:ring-4 focus:ring-yellow-400 placeholder-gray-500"
                 />
                 {errors.city && (
-                  <p className="absolute -bottom-5 left-0 text-red-600 text-sm">{errors.city}</p>
+                  <p className="text-red-600 text-sm min-h-[20px] mt-1">{errors.city}</p>
                 )}
               </div>
               <div className="relative">
@@ -254,8 +254,8 @@ const AuthForm = ({ onClose }) => {
                   placeholder="Phone Number"
                   className="w-full p-3 border-4 border-black focus:outline-none focus:ring-4 focus:ring-yellow-400 placeholder-gray-500"
                 />
-                {errors.phonenum && (
-                  <p className="absolute -bottom-5 left-0 text-red-600 text-sm">{errors.phonenum}</p>
+                 {errors.phonenum && (
+                  <p className="text-red-600 text-sm min-h-[20px] mt-1">{errors.phonenum}</p>
                 )}
               </div>
             </div>

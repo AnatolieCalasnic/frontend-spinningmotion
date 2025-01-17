@@ -22,6 +22,8 @@ before_script:
 
 build:
   stage: build
+  variables:
+    CI: "false"  
   script:
     - npm ci
     - npm run build
@@ -35,12 +37,10 @@ cypress_e2e:
   stage: e2e_test
   image: cypress/browsers:node18.12.0-chrome107
   script:
-    - npm ci
-    # Start the application in the background
-    - npm run preview &
-    # Wait for the application to be ready
-    - sleep 10
-    # Run Cypress tests
+   - $ErrorActionPreference = "Stop"  
+    - npm install  
+    - Start-Process npm -ArgumentList "run preview" -NoNewWindow -Wait
+    - Start-Sleep -Seconds 10  
     - npx cypress run --browser chrome
   artifacts:
     when: always

@@ -12,7 +12,8 @@ import jazzFestImage from '../images/jazzfest-011824-98f274e7866c4dc89f0957d2021
 
 const fakeNewsData = {
   jazz: [
-    { id: 1, title: "New Orleans Jazz Fest Announces Lineup", image: jazzFestImage },
+    { id: 1, title: "New Orleans Jazz Fest Announces Lineup", image: jazzFestImage,
+             content: "The legendary New Orleans Jazz & Heritage Festival has unveiled its highly anticipated lineup for this year. Music lovers can expect an incredible mix of local and international jazz talents, celebrating the rich musical heritage of New Orleans. The festival promises to showcase both legendary performers and emerging artists, continuing its tradition of musical excellence."    },
     { id: 2, title: "Legendary Jazz Pianist Chick Corea Passes Away", image: "" },
     { id: 3, title: "Jazz at Lincoln Center Reopens with Star-Studded Concert", image: "" }
   ],
@@ -150,11 +151,10 @@ const ProductPage = () => {
       <div className="border-4 border-black p-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold bg-red-600 text-white p-2">{formattedGenre}: News</h2>
-          <Link to="/news" className="bg-yellow-400 font-bold px-4 py-2 hover:bg-yellow-500 transition-colors">View all</Link>
         </div>
         <div className="grid grid-cols-3 gap-6">
           {newsItems.map((item, index) => (
-            <Link key={item.id} to={`/news/${item.id}`} className="border-2 border-black p-2 hover:bg-gray-100 transition-colors">
+            <Link key={item.id} to={`/news/${genre}/${item.id}`} className="border-2 border-black p-2 hover:bg-gray-100 transition-colors">
               <div className="aspect-video mb-2 overflow-hidden">
                 {item.image ? (
                   <img 

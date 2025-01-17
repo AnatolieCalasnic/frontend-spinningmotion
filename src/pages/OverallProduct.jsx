@@ -25,6 +25,8 @@ export default function OverallProduct() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState('none'); // 'none', 'asc', 'desc'
+
 
   const itemsPerPage = viewMode === 'grid' ? 18 : 10;   // 18 items in grid (6x3), 10 in list
 
@@ -52,12 +54,20 @@ export default function OverallProduct() {
     fetchProducts();
   }, [genreParam]);
 
-  const filteredProducts = products.filter(product =>
+  let filteredProducts = products.filter(product =>
     searchQuery === '' || 
     product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.artist.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  if (sortOrder !== 'none') {
+    filteredProducts = [...filteredProducts].sort((a, b) => {
+      if (sortOrder === 'asc') {
+        return a.price - b.price;
+      } else {
+        return b.price - a.price;
+      }
+    });
+  }
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const currentProducts = filteredProducts.slice(
     (currentPage - 1) * itemsPerPage, // Start index
@@ -111,13 +121,17 @@ export default function OverallProduct() {
             <LayoutList size={20} />
           </button>
           <button
-            onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-            className="border-4 border-black p-2 bg-white hover:bg-gray-100"
-          >
-            <Filter size={20} />
-          </button>
-          <button
-            className="border-4 border-black p-2 bg-white hover:bg-gray-100"
+            onClick={() => {
+              setSortOrder(current => {
+                if (current === 'none') return 'asc';
+                if (current === 'asc') return 'desc';
+                return 'none';
+              });
+            }}
+            className={`border-4 border-black p-2 ${
+              sortOrder !== 'none' ? 'bg-blue-600 text-white' : 'bg-white hover:bg-gray-100'
+            }`}
+            title={sortOrder === 'asc' ? 'Price: Low to High' : sortOrder === 'desc' ? 'Price: High to Low' : 'Sort by Price'}
           >
             <ArrowUpDown size={20} />
           </button>

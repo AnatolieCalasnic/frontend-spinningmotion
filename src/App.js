@@ -18,7 +18,6 @@ import AdminRecords from './pages/AdminRecords';
 import SuccessPage from './return/page';
 import AdminOrderDetailsPage from './pages/AdminOrderDetailsPage';
 import AdminOrdersPage from './pages/AdminOrdersPage';  
-import SidebarAdmin from './components/admin/SidebarAdmin';
 import AdminLayout from './components/admin/AdminLayout';  
 import { ToastContainer } from 'react-toastify';
 import WebSocketNotifications from './components/websocket/WebSocketNotifications';
@@ -32,6 +31,7 @@ import AdminSettings from './pages/AdminSettings';
 import FAQ from './pages/footer-pages/FAQ';
 import ShippingInfo from './pages/footer-pages/ShippingInfo';
 import ReturnsExchanges from './pages/footer-pages/ReturnsExchanges';
+import NewsDetailPage from './pages/NewsDetails';
 const PublicLayout = ({ children }) => {
   const { user } = useAuth();
   if (user?.isAdmin) {
@@ -135,6 +135,7 @@ function App() {
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/shipping" element={<ShippingInfo />} />
                   <Route path="/returns" element={<ReturnsExchanges />} />
+                  <Route path="/news/:genre/:newsId" element={<NewsDetailPage />} />
                 </Routes>
               </PublicLayout>
             }

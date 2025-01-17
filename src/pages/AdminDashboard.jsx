@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import AdminLayout from '../components/admin/AdminLayout';
 import DashboardStats from '../components/admin/DashboardStats';
 import RecentOrdersTable from '../components/admin/RecentOrdersTable';
 import { useAdminData } from '../hooks/useAdminData';
@@ -72,7 +71,7 @@ const AdminDashboard = () => {
           animate={{ y: 0, opacity: 1 }}
           className="bg-white border-8 border-black p-6 mb-8"
         >
-          <h2 className="text-2xl font-bold mb-6">Sales Overview</h2>
+          <h2 className="text-2xl font-bold mb-6">Sales Overview For The Past Month</h2>
           <div className="p-4 bg-black rounded-lg">
             <SalesChart data={dashboardData?.recentOrders || []} />
           </div>

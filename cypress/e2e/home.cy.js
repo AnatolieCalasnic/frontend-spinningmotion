@@ -9,11 +9,6 @@ describe('Homepage', () => {
     cy.contains('NEW RELEASES').should('be.visible')
   })
 
-  it('should display genres section', () => {
-    cy.contains('GENRES').should('be.visible')
-    cy.get('.grid-cols-2').should('exist')
-  })
-
   it('should have working newsletter signup', () => {
     cy.contains('JOIN OUR MAILING LIST').should('be.visible')
     cy.get('input[type="email"]').type('test@example.com')

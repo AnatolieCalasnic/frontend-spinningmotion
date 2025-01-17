@@ -33,7 +33,7 @@ const FeaturedArtistCard = ({ artist }) => {
   }, [artist.id]);
 
   return (
-    <div className="h-48 mb-4 overflow-hidden">
+    <div className="h-64 mb-4 overflow-hidden">
       {loading ? (
         <div className="w-full h-full bg-gray-200 animate-pulse" />
       ) : coverImage ? (
