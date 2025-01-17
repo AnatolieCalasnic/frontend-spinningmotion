@@ -22,7 +22,7 @@ before_script:
 
 build:
   stage: build
-   variables:
+  variables:
     CI: "false"  
   script:
     - npm ci
