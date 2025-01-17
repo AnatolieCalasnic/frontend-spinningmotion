@@ -45,8 +45,8 @@ cypress_e2e:
   artifacts:
     when: always
     paths:
-      - cypress/videos//*
-      - cypress/screenshots//*
+      - cypress/videos/*
+      - cypress/screenshots/*
     expire_in: 1 week
   allow_failure: false
 
@@ -57,12 +57,14 @@ deploy_staging:
   script:
     - |
       # Create Docker network if it doesn't exist
-      if (! docker network inspect spinningmotion_network -q) {
+      if (-not (docker network inspect spinningmotion_network 2>$null)) {
         docker network create spinningmotion_network
       }
-      # Stop and remove any existing container for the frontend
-      docker ps -q --filter "name=spinningmotion-frontend" | ForEach-Object { docker stop $_ }
-      docker ps -aq --filter "name=spinningmotion-frontend" | ForEach-Object { docker rm $_ }
+      $containerId = docker ps -q --filter "name=spinningmotion-frontend"
+      if ($containerId) {
+        docker stop $containerId
+        docker rm $containerId
+      }
     - docker build -t spinningmotion-frontend:latest .
     - docker run -d --name spinningmotion-frontend --network spinningmotion_network -p 3000:80 spinningmotion-frontend:latest
   only:
