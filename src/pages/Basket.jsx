@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Trash2, Plus, Minus, RefreshCw, CreditCard, X, ShoppingBag } from 'lucide-react';
+import { Trash2, Plus, Minus, X, ShoppingBag } from 'lucide-react';
 import EmbeddedCheckoutButton from '../components/EmbeddedCheckoutButton';
 import BasketItemImage from '../components/BasketItemImage';
 const BasketPage = () => {

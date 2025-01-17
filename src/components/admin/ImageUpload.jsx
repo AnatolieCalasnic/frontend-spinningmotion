@@ -32,7 +32,7 @@ const ImageUpload = ({ existingImages = [], onChange, maxImages = 4 }) => {
     return () => {
       previews.forEach(url => URL.revokeObjectURL(url));
     };
-  }, [existingImages]);
+  }, [existingImages, previews]);
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);

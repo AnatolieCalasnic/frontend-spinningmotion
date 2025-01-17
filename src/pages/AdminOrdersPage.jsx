@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Filter, ArrowUpDown, Eye, Download, Printer } from 'lucide-react';
+import { Search, Eye, Download, Printer } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 

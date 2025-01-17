@@ -18,7 +18,6 @@ import AdminRecords from './pages/AdminRecords';
 import SuccessPage from './return/page';
 import AdminOrderDetailsPage from './pages/AdminOrderDetailsPage';
 import AdminOrdersPage from './pages/AdminOrdersPage';  
-import SidebarAdmin from './components/admin/SidebarAdmin';
 import AdminLayout from './components/admin/AdminLayout';  
 import { ToastContainer } from 'react-toastify';
 import WebSocketNotifications from './components/websocket/WebSocketNotifications';

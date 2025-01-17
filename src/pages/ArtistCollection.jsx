@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { 
   Grid, 
   LayoutList, 
   ChevronLeft, 
   ChevronRight, 
   Search, 
-  Filter,
+ 
   ArrowUpDown
 } from 'lucide-react';
 import axios from 'axios';
@@ -24,8 +24,6 @@ export default function ArtistCollection() {
   const [viewMode, setViewMode] = useState('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('newest');
-  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState('none'); // 'none', 'asc', 'desc'
 
   const itemsPerPage = viewMode === 'grid' ? 18 : 10;

@@ -87,7 +87,7 @@ const EmbeddedCheckoutButton = ({ items, disabled = false, quickBuy = false, app
     } finally {
       setLoading(false);
     }
-  }, [items, user, guestDetails, quickBuy, appliedCoupon]);
+  }, [items, user, guestDetails, appliedCoupon]);
 
   const validateCouponBeforeCheckout = async (couponCode) => {
     try {

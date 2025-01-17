@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Package, User, Calendar, CreditCard, Truck, Check } from 'lucide-react';
+import { ArrowLeft, Package, User, Truck, Check } from 'lucide-react';
 
 const AdminOrderDetailsPage = () => {
   const { id } = useParams();

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import AdminLayout from '../components/admin/AdminLayout';
 import DashboardStats from '../components/admin/DashboardStats';
 import RecentOrdersTable from '../components/admin/RecentOrdersTable';
 import { useAdminData } from '../hooks/useAdminData';

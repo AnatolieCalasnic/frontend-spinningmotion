@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Loader, ArrowDown, Facebook, Instagram, Twitter, Music} from 'lucide-react';
+import { Loader } from 'lucide-react';
 import { useAuthRedirect } from '../hooks/useAuthRedirect';
 import ProductCard from '../components/ProductCard';
 import FeaturedArtistCard from '../components/FeaturedArtistCard';
@@ -11,7 +11,6 @@ import MusicPlayer from '../components/site_navigation/MusicPlayer';
 
 export default function Home() {
   useAuthRedirect();
-  const [isPlaying, setIsPlaying] = useState(false);
   const [featuredAlbums, setFeaturedAlbums] = useState([]);
   const [genres, setGenres] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

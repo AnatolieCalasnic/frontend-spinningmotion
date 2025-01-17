@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import RecordForm from './RecordForm';
 import axios from 'axios';
 import { toast } from 'react-toastify';

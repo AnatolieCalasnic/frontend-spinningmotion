@@ -78,7 +78,7 @@ const SalesChart = ({ }) => {
       setLoading(false);
     };
 
-    // Simulate loading progress
+    // simulating loading progress
     const loadStages = [33, 66, 100];
     let currentStage = 0;
     const interval = setInterval(() => {

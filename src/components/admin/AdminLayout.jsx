@@ -8,7 +8,6 @@ const AdminLayout = ({ children }) => {
     const darkMode = localStorage.getItem('adminDarkMode');
     document.documentElement.classList.toggle('dark', darkMode === 'dark');
 
-    // Cleanup function to remove dark mode when leaving admin section
     return () => {
       document.documentElement.classList.remove('dark');
     };
